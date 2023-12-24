@@ -50,7 +50,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 		rw.Header().Set("Content-Type", "text/plain")
 		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte(hash))
+		rw.Write([]byte("http://localhost:8080/" + hash))
 		return
 	} else if r.Method == http.MethodGet {
 		path := r.RequestURI
@@ -80,7 +80,7 @@ func main() {
 	mux.HandleFunc("/{id}", handler)
 	mux.HandleFunc("/", handler)
 
-	err := http.ListenAndServe("localhost:8080", mux)
+	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		panic(err)
 	}
