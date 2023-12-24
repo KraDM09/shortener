@@ -10,7 +10,7 @@ import (
 
 type Link struct {
 	Hash string
-	Url  string
+	URL  string
 }
 
 var hashes = []Link{}
@@ -46,7 +46,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 		hash := createHash()
 		fmt.Print(hash)
-		hashes = append(hashes, Link{Hash: hash, Url: url})
+		hashes = append(hashes, Link{Hash: hash, URL: url})
 
 		rw.Header().Set("Content-Type", "text/plain")
 		rw.WriteHeader(http.StatusCreated)
@@ -59,7 +59,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 		for _, hash := range hashes {
 			if hash.Hash == id {
-				url = hash.Url
+				url = hash.URL
 				break
 			}
 		}
