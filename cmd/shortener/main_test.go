@@ -21,6 +21,7 @@ func Test_handler(t *testing.T) {
 		h(w, request)
 
 		result := w.Result()
+		result.Body.Close()
 
 		assert.Equal(t, http.StatusCreated, result.StatusCode)
 		assert.Equal(t, "text/plain", result.Header.Get("Content-Type"))
@@ -36,6 +37,8 @@ func Test_handler(t *testing.T) {
 		h(w, request)
 
 		result := w.Result()
+		result.Body.Close()
+
 		assert.Equal(t, http.StatusTemporaryRedirect, result.StatusCode)
 		assert.Equal(t, url, result.Header.Get("Location"))
 	})
