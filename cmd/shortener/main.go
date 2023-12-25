@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 
 		if err != nil {
-			http.Error(rw, "Ошибка чтения тела запроса", http.StatusInternalServerError)
+			http.Error(rw, "Ошибка чтения тела запроса", http.StatusBadRequest)
 			return
 		}
 
@@ -53,8 +54,14 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte("http://localhost:8080/" + hash))
 		return
 	} else if r.Method == http.MethodGet {
-		path := r.RequestURI
-		id := strings.TrimLeft(path, "/")
+		parsedURL, err := url.Parse(r.RequestURI)
+
+		if err != nil {
+			http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
+			return
+		}
+
+		id := strings.TrimLeft(parsedURL.Path, "/")
 		var url string
 
 		for _, hash := range hashes {
