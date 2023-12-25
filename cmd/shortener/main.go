@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/go-chi/chi"
 )
 
 type Link struct {
@@ -82,12 +84,12 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 
-	mux.HandleFunc("/{id}", handler)
-	mux.HandleFunc("/", handler)
+	r.Post("/", handler)
+	r.Get("/{id}", handler)
 
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", r)
 	if err != nil {
 		panic(err)
 	}
