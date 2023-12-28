@@ -52,7 +52,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 		rw.Header().Set("Content-Type", "text/plain")
 		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte("http://" + flagBaseShortURL + "/" + hash))
+		rw.Write([]byte(flagBaseShortURL + "/" + hash))
 		return
 	} else if r.Method == http.MethodGet {
 		parsedURL, err := url.Parse(r.RequestURI)
