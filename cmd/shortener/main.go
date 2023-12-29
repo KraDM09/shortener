@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/KraDM09/shortener/config"
 	"github.com/go-chi/chi"
 )
 
@@ -48,12 +49,11 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		url := string(body)
 
 		hash := createHash()
-		fmt.Print(hash)
 		hashes = append(hashes, Link{Hash: hash, URL: url})
 
 		rw.Header().Set("Content-Type", "text/plain")
 		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte("http://localhost:8080/" + hash))
+		rw.Write([]byte("http://" + config.FlagBaseShortURL + "/" + hash))
 		return
 	} else if r.Method == http.MethodGet {
 		parsedURL, err := url.Parse(r.RequestURI)
@@ -83,14 +83,23 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusBadRequest)
 }
 
+// функция main вызывается автоматически при запуске приложения
 func main() {
+	// обрабатываем аргументы командной строки
+	config.ParseFlags()
+
+	if err := run(); err != nil {
+		panic(err)
+	}
+}
+
+// функция run будет полезна при инициализации зависимостей сервера перед запуском
+func run() error {
 	r := chi.NewRouter()
 
 	r.Post("/", handler)
 	r.Get("/{id}", handler)
 
-	err := http.ListenAndServe(":8080", r)
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println("Running server on", config.FlagRunAddr)
+	return http.ListenAndServe(config.FlagRunAddr, r)
 }
