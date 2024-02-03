@@ -19,50 +19,47 @@ type Link struct {
 
 var hashes = []Link{}
 
-func handler(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		body, err := io.ReadAll(r.Body)
+func SaveNewUrlHandler(rw http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
 
-		if err != nil {
-			http.Error(rw, "Ошибка чтения тела запроса", http.StatusBadRequest)
-			return
-		}
-
-		url := string(body)
-
-		hash := util.CreateHash()
-		hashes = append(hashes, Link{Hash: hash, URL: url})
-
-		rw.Header().Set("Content-Type", "text/plain")
-		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte("http://" + config.FlagBaseShortURL + "/" + hash))
+	if err != nil {
+		http.Error(rw, "Ошибка чтения тела запроса", http.StatusBadRequest)
 		return
-	} else if r.Method == http.MethodGet {
-		parsedURL, err := url.Parse(r.RequestURI)
+	}
 
-		if err != nil {
-			http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
-			return
-		}
+	url := string(body)
 
-		id := strings.TrimLeft(parsedURL.Path, "/")
-		var url string
+	hash := util.CreateHash()
+	hashes = append(hashes, Link{Hash: hash, URL: url})
 
-		for _, hash := range hashes {
-			if hash.Hash == id {
-				url = hash.URL
-				break
-			}
-		}
+	rw.Header().Set("Content-Type", "text/plain")
+	rw.WriteHeader(http.StatusCreated)
+	rw.Write([]byte("http://" + config.FlagBaseShortURL + "/" + hash))
+}
 
-		if url != "" {
-			rw.Header().Set("Location", url)
-			rw.WriteHeader(http.StatusTemporaryRedirect)
-			return
+func GetUrlByHashHandler(rw http.ResponseWriter, r *http.Request) {
+	parsedURL, err := url.Parse(r.RequestURI)
+
+	if err != nil {
+		http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
+		return
+	}
+
+	id := strings.TrimLeft(parsedURL.Path, "/")
+	var url string
+
+	for _, hash := range hashes {
+		if hash.Hash == id {
+			url = hash.URL
+			break
 		}
 	}
 
-	rw.WriteHeader(http.StatusBadRequest)
+	if url != "" {
+		rw.Header().Set("Location", url)
+		rw.WriteHeader(http.StatusTemporaryRedirect)
+		return
+	}
 }
 
 // функция main вызывается автоматически при запуске приложения
@@ -79,8 +76,8 @@ func main() {
 func run() error {
 	r := chi.NewRouter()
 
-	r.Post("/", handler)
-	r.Get("/{id}", handler)
+	r.Post("/", SaveNewUrlHandler)
+	r.Get("/{id}", GetUrlByHashHandler)
 
 	fmt.Println("Running server on", config.FlagRunAddr)
 	return http.ListenAndServe(config.FlagRunAddr, r)
