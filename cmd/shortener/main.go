@@ -19,7 +19,7 @@ type Link struct {
 
 var hashes = []Link{}
 
-func SaveNewUrlHandler(rw http.ResponseWriter, r *http.Request) {
+func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
@@ -34,10 +34,10 @@ func SaveNewUrlHandler(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(http.StatusCreated)
-	rw.Write([]byte("http://" + config.FlagBaseShortURL + "/" + hash))
+	rw.Write([]byte(config.FlagBaseShortURL + "/" + hash))
 }
 
-func GetUrlByHashHandler(rw http.ResponseWriter, r *http.Request) {
+func GetURLByHashHandler(rw http.ResponseWriter, r *http.Request) {
 	parsedURL, err := url.Parse(r.RequestURI)
 
 	if err != nil {
@@ -76,8 +76,8 @@ func main() {
 func run() error {
 	r := chi.NewRouter()
 
-	r.Post("/", SaveNewUrlHandler)
-	r.Get("/{id}", GetUrlByHashHandler)
+	r.Post("/", SaveNewURLHandler)
+	r.Get("/{id}", GetURLByHashHandler)
 
 	fmt.Println("Running server on", config.FlagRunAddr)
 	return http.ListenAndServe(config.FlagRunAddr, r)

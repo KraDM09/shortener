@@ -17,7 +17,7 @@ func Test_handler(t *testing.T) {
 	t.Run("positive test #1", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(SaveNewUrlHandler)
+		h := http.HandlerFunc(SaveNewURLHandler)
 		h(w, request)
 
 		result := w.Result()
@@ -33,7 +33,7 @@ func Test_handler(t *testing.T) {
 	t.Run("positive test #2", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, endpoint, nil)
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(GetUrlByHashHandler)
+		h := http.HandlerFunc(GetURLByHashHandler)
 		h(w, request)
 
 		result := w.Result()
