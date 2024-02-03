@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/KraDM09/shortener/config"
+	"github.com/KraDM09/shortener/util"
 	"github.com/go-chi/chi"
 )
 
@@ -18,24 +18,6 @@ type Link struct {
 }
 
 var hashes = []Link{}
-
-func createHash() string {
-	alphabet := "abcdefghijklmnopqrstuvwxyz"
-	hash := ""
-
-	for i := 0; i < 6; i++ {
-		randomNumber := rand.Intn(26)
-		char := string(alphabet[randomNumber])
-
-		if rand.Intn(2) == 1 {
-			char = strings.ToUpper(char)
-		}
-
-		hash = hash + char
-	}
-
-	return hash
-}
 
 func handler(rw http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
@@ -48,7 +30,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 		url := string(body)
 
-		hash := createHash()
+		hash := util.CreateHash()
 		hashes = append(hashes, Link{Hash: hash, URL: url})
 
 		rw.Header().Set("Content-Type", "text/plain")
