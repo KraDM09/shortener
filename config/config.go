@@ -25,7 +25,7 @@ func ParseFlags() {
 		FlagRunAddr = serverAddress
 	}
 
-	if baseUrl := os.Getenv("BASE_URL"); baseUrl != "" {
-		FlagBaseShortURL = baseUrl
+	if baseURL := os.Getenv("BASE_URL"); baseURL != "" {
+		FlagBaseShortURL = baseURL
 	}
 }
