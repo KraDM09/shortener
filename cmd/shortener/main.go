@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/KraDM09/shortener/config"
+	"github.com/KraDM09/shortener/internal/app/logger"
 	"github.com/KraDM09/shortener/util"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 type Link struct {
@@ -18,6 +19,13 @@ type Link struct {
 }
 
 var hashes = []Link{}
+
+// хендлер для /ping
+func PingHandler(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "text/plain")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("pong\n"))
+}
 
 func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
@@ -74,11 +82,19 @@ func main() {
 
 // функция run будет полезна при инициализации зависимостей сервера перед запуском
 func run() error {
+	if err := logger.Initialize(config.FlagLogLevel); err != nil {
+		return err
+	}
+
 	r := chi.NewRouter()
 
+	r.Use(logger.RequestLogger)
+
 	r.Post("/", SaveNewURLHandler)
+	r.Post("/ping", PingHandler)
 	r.Get("/{id}", GetURLByHashHandler)
 
-	fmt.Println("Running server on", config.FlagRunAddr)
+	logger.Log.Info("Running server", zap.String("address", config.FlagRunAddr))
+	// оборачиваем хендлер webhook в middleware с логированием
 	return http.ListenAndServe(config.FlagRunAddr, r)
 }
