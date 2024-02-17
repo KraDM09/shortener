@@ -1,7 +1,8 @@
-package handlers
+package main
 
 import (
 	"bytes"
+	"github.com/KraDM09/shortener/internal/app/handlers"
 	"github.com/KraDM09/shortener/internal/app/storage"
 	"io"
 	"net/http"
@@ -21,7 +22,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			SaveNewURLHandler(writer, request, store)
+			handlers.SaveNewURLHandler(writer, request, store)
 		})
 		h(w, request)
 
@@ -39,7 +40,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, endpoint, nil)
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			GetURLByHashHandler(writer, request, store)
+			handlers.GetURLByHashHandler(writer, request, store)
 		})
 		h(w, request)
 
