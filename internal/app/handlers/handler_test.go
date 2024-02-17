@@ -1,7 +1,8 @@
-package main
+package handlers
 
 import (
 	"bytes"
+	"github.com/KraDM09/shortener/internal/app/storage"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,10 +15,14 @@ func Test_handler(t *testing.T) {
 	var endpoint string
 	url := "https://practicum.yandex.ru/profile/go-advanced/"
 
+	store := &storage.MapStorage{}
+
 	t.Run("positive test #1", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(SaveNewURLHandler)
+		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			SaveNewURLHandler(writer, request, store)
+		})
 		h(w, request)
 
 		result := w.Result()
@@ -33,7 +38,9 @@ func Test_handler(t *testing.T) {
 	t.Run("positive test #2", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, endpoint, nil)
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(GetURLByHashHandler)
+		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			GetURLByHashHandler(writer, request, store)
+		})
 		h(w, request)
 
 		result := w.Result()
