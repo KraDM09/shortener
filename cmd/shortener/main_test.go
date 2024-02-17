@@ -14,6 +14,7 @@ func Test_handler(t *testing.T) {
 	var endpoint string
 	url := "https://practicum.yandex.ru/profile/go-advanced/"
 
+	// тест
 	t.Run("positive test #1", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
