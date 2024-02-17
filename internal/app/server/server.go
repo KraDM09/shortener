@@ -13,7 +13,7 @@ func Run(store storage.Storage, r router.Router) error {
 		handlers.SaveNewURLHandler(rw, r, store)
 	})
 	r.Post("/ping", handlers.PingHandler)
-	r.Post("/{id}", func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetURLByHashHandler(rw, r, store)
 	})
 
