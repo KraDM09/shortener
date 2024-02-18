@@ -25,7 +25,7 @@ func ShortenHandler(rw http.ResponseWriter, r *http.Request, store storage.Stora
 		Result: config.FlagBaseShortURL + "/" + hash,
 	}
 
-	rw.Header().Set("Content-Type", "text/json")
+	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
 	// сериализуем ответ сервера

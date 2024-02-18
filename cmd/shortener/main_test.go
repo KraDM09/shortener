@@ -20,7 +20,7 @@ var endpoint string
 var url = "https://practicum.yandex.ru/profile/go-advanced/"
 var store = &storage.MapStorage{}
 
-func testGetUrlByHash(t *testing.T) {
+func testGetURLByHash(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, endpoint, nil)
 	w := httptest.NewRecorder()
 	h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -54,7 +54,7 @@ func Test_handler(t *testing.T) {
 		endpoint = string(body)
 	})
 
-	t.Run("testGetUrlByHash", testGetUrlByHash)
+	t.Run("testGetURLByHash", testGetURLByHash)
 }
 
 func Test_handler2(t *testing.T) {
@@ -93,10 +93,10 @@ func Test_handler2(t *testing.T) {
 		}
 
 		assert.Equal(t, http.StatusCreated, result.StatusCode)
-		assert.Equal(t, "text/json", result.Header.Get("Content-Type"))
+		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
 
 		endpoint = resp.Result
 	})
 
-	t.Run("testGetUrlByHash", testGetUrlByHash)
+	t.Run("testGetURLByHash", testGetURLByHash)
 }
