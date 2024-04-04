@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/KraDM09/shortener/internal/app/compressor"
 	"net/http"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -10,12 +11,13 @@ import (
 	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func Run(store storage.Storage, r router.Router, logger logger.Logger) error {
+func Run(store storage.Storage, r router.Router, logger logger.Logger, compressor compressor.Compressor) error {
 	if err := logger.Initialize(config.FlagLogLevel); err != nil {
 		return err
 	}
 
 	r.Use(logger.RequestLogger)
+	r.Use(compressor.RequestCompressor)
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.SaveNewURLHandler(rw, r, store)

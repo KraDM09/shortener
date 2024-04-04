@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/KraDM09/shortener/internal/app/compressor"
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/logger"
 	"github.com/KraDM09/shortener/internal/app/router"
@@ -17,8 +18,9 @@ func main() {
 	store := &storage.MapStorage{}
 	r := &router.ChiRouter{}
 	log := &logger.ZapLogger{}
+	c := &compressor.GzipCompressor{}
 
-	if err := server.Run(store, r, log); err != nil {
+	if err := server.Run(store, r, log, c); err != nil {
 		panic(err)
 	}
 }
