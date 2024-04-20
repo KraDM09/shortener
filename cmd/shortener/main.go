@@ -9,13 +9,21 @@ import (
 	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
+func getStorage() storage.Storage {
+	if len(config.FlagFileStoragePath) > 0 {
+		return &storage.FileStorage{}
+	} else {
+		//return &storage.SliceStorage{}
+		return &storage.MapStorage{}
+	}
+}
+
 // функция main вызывается автоматически при запуске приложения
 func main() {
 	// обрабатываем аргументы командной строки
 	config.ParseFlags()
 
-	//store := &storage.SliceStorage{}
-	store := &storage.MapStorage{}
+	store := getStorage()
 	r := &router.ChiRouter{}
 	log := &logger.ZapLogger{}
 	c := &compressor.GzipCompressor{}
