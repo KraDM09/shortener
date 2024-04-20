@@ -27,7 +27,7 @@ type FileRow struct {
 func (s FileStorage) Save(hash string, url string) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
-		UUID:        util.Uuid(),
+		UUID:        util.CreateUUID(),
 		ShortURL:    hash,
 		OriginalURL: url,
 	})

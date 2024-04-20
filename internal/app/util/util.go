@@ -24,7 +24,7 @@ func CreateHash() string {
 	return hash
 }
 
-func Uuid() string {
+func CreateUUID() string {
 	uuid := &UUID.GoogleUUID{}
 
 	return uuid.New()
