@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-type GzipCompressor struct {
-}
+type GzipCompressor struct{}
 
 // compressWriter реализует интерфейс http.ResponseWriter и позволяет прозрачно для сервера
 // сжимать передаваемые данные и выставлять правильные HTTP-заголовки

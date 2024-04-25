@@ -3,14 +3,14 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/KraDM09/shortener/internal/app/config"
-	"github.com/KraDM09/shortener/internal/app/util"
 	"log"
 	"os"
+
+	"github.com/KraDM09/shortener/internal/app/config"
+	"github.com/KraDM09/shortener/internal/app/util"
 )
 
-type FileStorage struct {
-}
+type FileStorage struct{}
 
 type FileRow struct {
 	UUID        string `json:"uuid"`
@@ -25,12 +25,11 @@ func (s FileStorage) Save(hash string, url string) {
 		ShortURL:    hash,
 		OriginalURL: url,
 	})
-
 	if err != nil {
 		return
 	}
 
-	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
 	if err != nil {
 		return
 	}
@@ -56,12 +55,11 @@ func (s FileStorage) Get(hash string) string {
 	// Создаем сканер для файла
 	scanner := bufio.NewScanner(file)
 
-	var row = FileRow{}
+	row := FileRow{}
 
 	// Читаем файл построчно
 	for scanner.Scan() {
 		err := json.Unmarshal(scanner.Bytes(), &row)
-
 		if err != nil {
 			return url
 		}

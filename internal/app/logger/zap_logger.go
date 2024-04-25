@@ -7,8 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ZapLogger struct {
-}
+type ZapLogger struct{}
 
 // Log будет доступен всему коду как синглтон.
 // Никакой код навыка, кроме функции InitLogger, не должен модифицировать эту переменную.

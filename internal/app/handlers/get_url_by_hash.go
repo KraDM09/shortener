@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"github.com/KraDM09/shortener/internal/app/storage"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
 func GetURLByHashHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
 	parsedURL, err := url.Parse(r.RequestURI)
-
 	if err != nil {
 		http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
 		return

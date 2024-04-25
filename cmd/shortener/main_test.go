@@ -16,9 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var endpoint string
-var url = "https://practicum.yandex.ru/profile/go-advanced/"
-var store = &storage.MapStorage{}
+var (
+	endpoint string
+	url      = "https://practicum.yandex.ru/profile/go-advanced/"
+	store    = &storage.MapStorage{}
+)
 
 func testGetURLByHash(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, endpoint, nil)
@@ -85,7 +87,7 @@ func Test_handler2(t *testing.T) {
 
 		result.Body.Close()
 
-		var resp = models.ShortenResponse{}
+		resp := models.ShortenResponse{}
 
 		err = json.Unmarshal(resultBody, &resp)
 		if err != nil {

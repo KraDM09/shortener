@@ -1,9 +1,10 @@
 package util
 
 import (
-	UUID "github.com/KraDM09/shortener/internal/app/util/uuid"
 	"math/rand"
 	"strings"
+
+	UUID "github.com/KraDM09/shortener/internal/app/util/uuid"
 )
 
 func CreateHash() string {

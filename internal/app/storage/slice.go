@@ -1,7 +1,6 @@
 package storage
 
-type SliceStorage struct {
-}
+type SliceStorage struct{}
 
 type Link struct {
 	Hash string

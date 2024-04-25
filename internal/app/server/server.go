@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/KraDM09/shortener/internal/app/compressor"
 	"net/http"
+
+	"github.com/KraDM09/shortener/internal/app/compressor"
 
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/handlers"

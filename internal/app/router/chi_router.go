@@ -1,14 +1,14 @@
 package router
 
 import (
-	"github.com/go-chi/chi"
 	"net/http"
+
+	"github.com/go-chi/chi"
 )
 
 var chiRouter = chi.NewRouter()
 
-type ChiRouter struct {
-}
+type ChiRouter struct{}
 
 func (router ChiRouter) Post(pattern string, fn http.HandlerFunc) {
 	chiRouter.Post(pattern, fn)
