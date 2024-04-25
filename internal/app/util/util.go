@@ -3,6 +3,8 @@ package util
 import (
 	"math/rand"
 	"strings"
+
+	UUID "github.com/KraDM09/shortener/internal/app/util/uuid"
 )
 
 func CreateHash() string {
@@ -21,4 +23,10 @@ func CreateHash() string {
 	}
 
 	return hash
+}
+
+func CreateUUID() string {
+	uuid := &UUID.GoogleUUID{}
+
+	return uuid.New()
 }

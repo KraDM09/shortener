@@ -1,7 +1,6 @@
 package storage
 
-type MapStorage struct {
-}
+type MapStorage struct{}
 
 var mapHashes = make(map[string]string)
 
