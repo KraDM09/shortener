@@ -12,12 +12,6 @@ import (
 type FileStorage struct {
 }
 
-type Producer struct {
-	file *os.File
-	// добавляем Writer в Producer
-	writer *bufio.Writer
-}
-
 type FileRow struct {
 	UUID        string `json:"uuid"`
 	ShortURL    string `json:"short_url"`

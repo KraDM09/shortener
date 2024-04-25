@@ -12,10 +12,9 @@ import (
 func getStorage() storage.Storage {
 	if len(config.FlagFileStoragePath) > 0 {
 		return &storage.FileStorage{}
-	} else {
-		//return &storage.SliceStorage{}
-		return &storage.MapStorage{}
 	}
+
+	return &storage.MapStorage{}
 }
 
 // функция main вызывается автоматически при запуске приложения
