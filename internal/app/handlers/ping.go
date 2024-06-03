@@ -1,12 +1,20 @@
 package handlers
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+
+	"github.com/KraDM09/shortener/internal/app/config"
+	"github.com/jackc/pgx/v5"
+)
 
 func PingHandler(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Content-Type", "text/plain")
-	rw.WriteHeader(http.StatusOK)
-	_, err := rw.Write([]byte("pong\n"))
+	conn, err := pgx.Connect(context.Background(), config.FlagDatabaseDsn)
 	if err != nil {
-		panic(err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	defer conn.Close(context.Background())
+
+	rw.WriteHeader(http.StatusOK)
 }

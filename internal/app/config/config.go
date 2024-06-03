@@ -11,6 +11,7 @@ var (
 	FlagBaseShortURL    string
 	FlagLogLevel        string
 	FlagFileStoragePath string
+	FlagDatabaseDsn     string
 )
 
 // parseFlags обрабатывает аргументы командной строки
@@ -23,6 +24,7 @@ func ParseFlags() {
 	flag.StringVar(&FlagBaseShortURL, "b", "http://localhost:8080", "short url address")
 	flag.StringVar(&FlagLogLevel, "l", "info", "log level")
 	flag.StringVar(&FlagFileStoragePath, "f", "/tmp/short-url-db.json", "file storage path")
+	flag.StringVar(&FlagDatabaseDsn, "d", "postgres://username:password@localhost:5432/database_name", "database dsn")
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 
