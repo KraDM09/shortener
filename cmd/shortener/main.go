@@ -10,6 +10,17 @@ import (
 )
 
 func getStorage() storage.Storage {
+	if len(config.FlagDatabaseDsn) > 0 {
+		db := &storage.Database{}
+
+		err := db.Migrate()
+		if err != nil {
+			panic(err)
+		}
+
+		return db
+	}
+
 	if len(config.FlagFileStoragePath) > 0 {
 		return &storage.FileStorage{}
 	}
