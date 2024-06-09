@@ -48,6 +48,9 @@ func (s Database) Get(hash string) string {
 		"SELECT original FROM shortener.urls WHERE short = $1",
 		hash,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer rows.Close()
 
