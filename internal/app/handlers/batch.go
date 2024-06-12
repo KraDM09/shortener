@@ -13,7 +13,6 @@ import (
 
 type URL struct {
 	CorrelationID string `json:"correlation_id"`
-	Original      string `json:"original_url"`
 	Short         string `json:"short_url"`
 }
 
@@ -42,7 +41,6 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 
 		resp[i] = URL{
 			CorrelationID: original.CorrelationID,
-			Original:      original.URL,
 			Short:         config.FlagBaseShortURL + "/" + hash,
 		}
 
