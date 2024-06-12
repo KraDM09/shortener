@@ -30,6 +30,9 @@ func Run(store storage.Storage, r router.Router, logger logger.Logger, compresso
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.ShortenHandler(rw, r, store)
 	})
+	r.Post("/api/batch", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.BatchHandler(rw, r, store)
+	})
 
 	logger.Info("Running server", "address", config.FlagRunAddr)
 	return http.ListenAndServe(config.FlagRunAddr, r)

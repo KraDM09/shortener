@@ -25,3 +25,13 @@ func (s SliceStorage) Get(hash string) string {
 
 	return url
 }
+
+func (s SliceStorage) SaveBatch(batch []URL) error {
+	for _, record := range batch {
+		hashes = append(hashes, Link{
+			Hash: record.Short,
+			URL:  record.Original,
+		})
+	}
+	return nil
+}
