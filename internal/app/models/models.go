@@ -13,13 +13,13 @@ type ShortenResponse struct {
 type BatchRequest []Original
 
 type Original struct {
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 	URL           string `json:"original_url"`
 }
 
 type BatchResponse []Short
 
 type Short struct {
-	CorrelationId UUID.UUID `json:"correlation_id"`
+	CorrelationID UUID.UUID `json:"correlation_id"`
 	URL           string    `json:"short_url"`
 }
