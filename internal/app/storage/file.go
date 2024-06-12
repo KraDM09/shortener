@@ -73,3 +73,31 @@ func (s FileStorage) Get(hash string) string {
 
 	return url
 }
+
+func (s FileStorage) SaveBatch(batch []URL) error {
+	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	for _, record := range batch {
+		data, err := json.Marshal(FileRow{
+			UUID:        util.CreateUUID(),
+			ShortURL:    record.Short,
+			OriginalURL: record.Original,
+		})
+		if err != nil {
+			return err
+		}
+
+		data = append(data, '\n')
+
+		if _, err := file.Write(data); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

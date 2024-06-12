@@ -12,3 +12,11 @@ func (m MapStorage) Get(hash string) string {
 	url := mapHashes[hash]
 	return url
 }
+
+func (m MapStorage) SaveBatch(batch []URL) error {
+	for _, record := range batch {
+		mapHashes[record.Short] = record.Original
+	}
+
+	return nil
+}
