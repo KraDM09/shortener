@@ -51,6 +51,7 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
 
 	if err := store.SaveBatch(batch); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -62,6 +63,4 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	rw.WriteHeader(http.StatusCreated)
 }
