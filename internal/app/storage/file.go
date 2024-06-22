@@ -18,7 +18,7 @@ type FileRow struct {
 	OriginalURL string `json:"original_url"`
 }
 
-func (s FileStorage) Save(hash string, url string) {
+func (s FileStorage) Save(hash string, url string) (string, error) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
 		UUID:        util.CreateUUID(),
@@ -26,12 +26,12 @@ func (s FileStorage) Save(hash string, url string) {
 		OriginalURL: url,
 	})
 	if err != nil {
-		return
+		return "", err
 	}
 
 	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	defer file.Close()
@@ -39,8 +39,10 @@ func (s FileStorage) Save(hash string, url string) {
 	data = append(data, '\n')
 
 	if _, err := file.Write(data); err != nil {
-		return
+		return "", err
 	}
+
+	return hash, nil
 }
 
 func (s FileStorage) Get(hash string) string {

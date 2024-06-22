@@ -18,17 +18,24 @@ func (pg PG) NewStore(conn *pgx.Conn) *PG {
 	return &PG{conn: conn}
 }
 
-func (pg PG) Save(hash string, url string) {
-	_, err := pg.conn.Exec(context.Background(),
+func (pg PG) Save(hash string, url string) (string, error) {
+	row, err := pg.conn.Exec(context.Background(),
 		"INSERT INTO shortener.urls (uuid, original, short)"+
-			"VALUES ($1, $2, $3)",
+			"VALUES ($1, $2, $3) ON CONFLICT (original) DO NOTHING RETURNING *",
 		util.CreateUUID(),
 		url,
 		hash,
 	)
 	if err != nil {
-		return
+		return "", err
 	}
+
+	if row.RowsAffected() == 0 {
+		short := pg.GetHashByOriginal(url)
+		return short, ErrConflict
+	}
+
+	return hash, nil
 }
 
 func (pg PG) SaveBatch(batch []URL) error {
@@ -49,6 +56,36 @@ func (pg PG) SaveBatch(batch []URL) error {
 	}
 
 	return nil
+}
+
+func (pg PG) GetHashByOriginal(original string) string {
+	rows, err := pg.conn.Query(context.Background(),
+		"SELECT short FROM shortener.urls WHERE original = $1",
+		original,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	records := make([]URL, 0, 1)
+
+	for rows.Next() {
+		var r URL
+		err = rows.Scan(&r.Short)
+		if err != nil {
+			log.Fatal(err)
+		}
+		records = append(records, r)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return records[0].Short
 }
 
 func (pg PG) Get(hash string) string {
@@ -104,7 +141,7 @@ func (pg PG) Bootstrap(ctx context.Context) error {
 	_, err = tx.Exec(ctx, `
         CREATE TABLE IF NOT EXISTS shortener.urls (
             uuid UUID PRIMARY KEY,
-            original TEXT NOT NULL,
+            original TEXT NOT NULL UNIQUE,
             short TEXT NOT NULL
         )
     `)

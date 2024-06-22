@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -19,13 +20,19 @@ func ShortenHandler(rw http.ResponseWriter, r *http.Request, store storage.Stora
 	}
 
 	hash := util.CreateHash()
-	store.Save(hash, req.URL)
+	short, err := store.Save(hash, req.URL)
+
+	rw.Header().Set("Content-Type", "application/json")
+
+	if errors.Is(err, storage.ErrConflict) {
+		hash = short
+		rw.WriteHeader(http.StatusConflict)
+	}
 
 	resp := models.ShortenResponse{
 		Result: config.FlagBaseShortURL + "/" + hash,
 	}
 
-	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
 	// сериализуем ответ сервера

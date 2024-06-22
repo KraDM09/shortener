@@ -9,8 +9,10 @@ type Link struct {
 
 var hashes []Link
 
-func (s SliceStorage) Save(hash string, url string) {
+func (s SliceStorage) Save(hash string, url string) (string, error) {
 	hashes = append(hashes, Link{Hash: hash, URL: url})
+
+	return hash, nil
 }
 
 func (s SliceStorage) Get(hash string) string {

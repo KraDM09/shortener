@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -19,7 +20,12 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 	URL := string(body)
 
 	hash := util.CreateHash()
-	store.Save(hash, URL)
+	short, err := store.Save(hash, URL)
+
+	if errors.Is(err, storage.ErrConflict) {
+		hash = short
+		rw.WriteHeader(http.StatusConflict)
+	}
 
 	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(http.StatusCreated)

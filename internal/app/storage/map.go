@@ -4,8 +4,10 @@ type MapStorage struct{}
 
 var mapHashes = make(map[string]string)
 
-func (m MapStorage) Save(hash string, url string) {
+func (m MapStorage) Save(hash string, url string) (string, error) {
 	mapHashes[hash] = url
+
+	return hash, nil
 }
 
 func (m MapStorage) Get(hash string) string {
