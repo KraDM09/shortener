@@ -12,6 +12,6 @@ var ErrConflict = errors.New("data conflict")
 
 type Storage interface {
 	Save(hash string, url string) (string, error)
-	Get(hash string) string
+	Get(hash string) (string, error)
 	SaveBatch(batch []URL) error
 }

@@ -10,9 +10,9 @@ func (m MapStorage) Save(hash string, url string) (string, error) {
 	return hash, nil
 }
 
-func (m MapStorage) Get(hash string) string {
+func (m MapStorage) Get(hash string) (string, error) {
 	url := mapHashes[hash]
-	return url
+	return url, nil
 }
 
 func (m MapStorage) SaveBatch(batch []URL) error {

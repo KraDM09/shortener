@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -28,26 +29,26 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := rw.Write([]byte("Пустные батчи запрещены"))
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 		return
 	}
 
-	resp := make([]URL, len(req))
-	batch := make([]storage.URL, len(req))
+	resp := make([]URL, 0, len(req))
+	batch := make([]storage.URL, 0, len(req))
 
-	for i, original := range req {
+	for i := range req {
 		hash := util.CreateHash()
 
-		resp[i] = URL{
-			CorrelationID: original.CorrelationID,
+		resp = append(resp, URL{
+			CorrelationID: req[i].CorrelationID,
 			Short:         config.FlagBaseShortURL + "/" + hash,
-		}
+		})
 
-		batch[i] = storage.URL{
+		batch = append(batch, storage.URL{
 			Short:    hash,
-			Original: original.URL,
-		}
+			Original: req[i].URL,
+		})
 	}
 
 	rw.Header().Set("Content-Type", "application/json")

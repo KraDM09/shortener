@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"log"
 
 	"github.com/KraDM09/shortener/internal/app/util"
 	"github.com/jackc/pgx/v5"
@@ -31,7 +30,11 @@ func (pg PG) Save(hash string, url string) (string, error) {
 	}
 
 	if row.RowsAffected() == 0 {
-		short := pg.GetHashByOriginal(url)
+		short, err := pg.GetHashByOriginal(url)
+		if err != nil {
+			return "", err
+		}
+
 		return short, ErrConflict
 	}
 
@@ -58,13 +61,13 @@ func (pg PG) SaveBatch(batch []URL) error {
 	return nil
 }
 
-func (pg PG) GetHashByOriginal(original string) string {
+func (pg PG) GetHashByOriginal(original string) (string, error) {
 	rows, err := pg.conn.Query(context.Background(),
 		"SELECT short FROM shortener.urls WHERE original = $1",
 		original,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	defer rows.Close()
@@ -75,26 +78,26 @@ func (pg PG) GetHashByOriginal(original string) string {
 		var r URL
 		err = rows.Scan(&r.Short)
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 		records = append(records, r)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return records[0].Short
+	return records[0].Short, nil
 }
 
-func (pg PG) Get(hash string) string {
+func (pg PG) Get(hash string) (string, error) {
 	rows, err := pg.conn.Query(context.Background(),
 		"SELECT original FROM shortener.urls WHERE short = $1",
 		hash,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	defer rows.Close()
@@ -105,17 +108,17 @@ func (pg PG) Get(hash string) string {
 		var r URL
 		err = rows.Scan(&r.Original)
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 		records = append(records, r)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return records[0].Original
+	return records[0].Original, nil
 }
 
 // Bootstrap подготавливает БД к работе, создавая необходимые таблицы и индексы

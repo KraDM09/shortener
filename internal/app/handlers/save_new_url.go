@@ -27,10 +27,16 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 		rw.WriteHeader(http.StatusConflict)
 	}
 
+	if err != nil {
+		http.Error(rw, "Не удалось сохранить URL", http.StatusInternalServerError)
+		return
+	}
+
 	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(http.StatusCreated)
 	_, err = rw.Write([]byte(config.FlagBaseShortURL + "/" + hash))
 	if err != nil {
-		panic(err)
+		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
+		return
 	}
 }

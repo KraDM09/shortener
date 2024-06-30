@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -67,7 +68,7 @@ func Test_handler2(t *testing.T) {
 
 		jsonData, err := json.Marshal(req)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/api/shorten", bytes.NewBufferString(string(jsonData)))
@@ -82,7 +83,7 @@ func Test_handler2(t *testing.T) {
 		// Чтение тела ответа
 		resultBody, err := io.ReadAll(result.Body)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 
 		result.Body.Close()
@@ -91,7 +92,7 @@ func Test_handler2(t *testing.T) {
 
 		err = json.Unmarshal(resultBody, &resp)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 
 		assert.Equal(t, http.StatusCreated, result.StatusCode)

@@ -16,7 +16,11 @@ func GetURLByHashHandler(rw http.ResponseWriter, r *http.Request, store storage.
 	}
 
 	id := strings.TrimLeft(parsedURL.Path, "/")
-	URL := store.Get(id)
+	URL, err := store.Get(id)
+	if err != nil {
+		http.Error(rw, "Не удалось получить адрес", http.StatusBadRequest)
+		return
+	}
 
 	if URL != "" {
 		rw.Header().Set("Location", URL)

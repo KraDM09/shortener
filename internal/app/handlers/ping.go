@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func PingHandler(rw http.ResponseWriter, r *http.Request) {
+func PingHandler(rw http.ResponseWriter, _ *http.Request) {
 	conn, err := pgx.Connect(context.Background(), config.FlagDatabaseDsn)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)

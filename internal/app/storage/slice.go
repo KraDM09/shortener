@@ -15,7 +15,7 @@ func (s SliceStorage) Save(hash string, url string) (string, error) {
 	return hash, nil
 }
 
-func (s SliceStorage) Get(hash string) string {
+func (s SliceStorage) Get(hash string) (string, error) {
 	var url string
 
 	for _, h := range hashes {
@@ -25,7 +25,7 @@ func (s SliceStorage) Get(hash string) string {
 		}
 	}
 
-	return url
+	return url, nil
 }
 
 func (s SliceStorage) SaveBatch(batch []URL) error {

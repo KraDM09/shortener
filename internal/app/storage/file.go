@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -45,12 +44,12 @@ func (s FileStorage) Save(hash string, url string) (string, error) {
 	return hash, nil
 }
 
-func (s FileStorage) Get(hash string) string {
+func (s FileStorage) Get(hash string) (string, error) {
 	var url string
 
 	file, err := os.Open(config.FlagFileStoragePath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer file.Close()
 
@@ -63,7 +62,7 @@ func (s FileStorage) Get(hash string) string {
 	for scanner.Scan() {
 		err := json.Unmarshal(scanner.Bytes(), &row)
 		if err != nil {
-			return url
+			return "", err
 		}
 
 		if row.ShortURL == hash {
@@ -73,7 +72,7 @@ func (s FileStorage) Get(hash string) string {
 
 	}
 
-	return url
+	return url, nil
 }
 
 func (s FileStorage) SaveBatch(batch []URL) error {
