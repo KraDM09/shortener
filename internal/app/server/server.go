@@ -23,12 +23,15 @@ func Run(store storage.Storage, r router.Router, logger logger.Logger, compresso
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.SaveNewURLHandler(rw, r, store)
 	})
-	r.Post("/ping", handlers.PingHandler)
+	r.Get("/ping", handlers.PingHandler)
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetURLByHashHandler(rw, r, store)
 	})
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.ShortenHandler(rw, r, store)
+	})
+	r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.BatchHandler(rw, r, store)
 	})
 
 	logger.Info("Running server", "address", config.FlagRunAddr)

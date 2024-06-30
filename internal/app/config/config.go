@@ -11,6 +11,7 @@ var (
 	FlagBaseShortURL    string
 	FlagLogLevel        string
 	FlagFileStoragePath string
+	FlagDatabaseDsn     string
 )
 
 // parseFlags обрабатывает аргументы командной строки
@@ -22,7 +23,8 @@ func ParseFlags() {
 	flag.StringVar(&FlagRunAddr, "a", ":8080", "address and port to run server")
 	flag.StringVar(&FlagBaseShortURL, "b", "http://localhost:8080", "short url address")
 	flag.StringVar(&FlagLogLevel, "l", "info", "log level")
-	flag.StringVar(&FlagFileStoragePath, "f", "/tmp/short-url-db.json", "file storage path")
+	flag.StringVar(&FlagFileStoragePath, "f", "", "file storage path")
+	flag.StringVar(&FlagDatabaseDsn, "d", "", "database dsn")
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 
@@ -40,5 +42,9 @@ func ParseFlags() {
 
 	if envFileStoragePath := os.Getenv("FILE_STORAGE_PATH"); envFileStoragePath != "" {
 		FlagFileStoragePath = envFileStoragePath
+	}
+
+	if envDatabaseDsn := os.Getenv("DATABASE_DSN"); envDatabaseDsn != "" {
+		FlagDatabaseDsn = envDatabaseDsn
 	}
 }
