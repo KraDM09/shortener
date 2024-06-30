@@ -22,14 +22,12 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 	hash := util.CreateHash()
 	short, err := store.Save(hash, URL)
 
-	if errors.Is(err, storage.ErrConflict) {
+	switch {
+	case errors.Is(err, storage.ErrConflict):
 		hash = short
 		rw.WriteHeader(http.StatusConflict)
-	}
-
-	if err != nil {
+	case err != nil:
 		http.Error(rw, "Не удалось сохранить URL", http.StatusInternalServerError)
-		return
 	}
 
 	rw.Header().Set("Content-Type", "text/plain")
