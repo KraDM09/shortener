@@ -18,6 +18,8 @@ func UrlsHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage)
 		return
 	}
 
+	rw.Header().Set("Content-Type", "application/json")
+
 	if len(*URLs) == 0 {
 		rw.WriteHeader(http.StatusNoContent)
 		return
@@ -27,6 +29,5 @@ func UrlsHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage)
 		(*URLs)[i].Short = config.FlagBaseShortURL + "/" + URL.Short
 	}
 
-	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(URLs)
 }
