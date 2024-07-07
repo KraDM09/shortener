@@ -1,5 +1,7 @@
 package constants
 
+type contextKey string
+
 const (
-	ContextUserIDKey = "user_id"
+	ContextUserIDKey contextKey = "user_id"
 )

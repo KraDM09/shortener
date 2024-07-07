@@ -20,8 +20,8 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 	URL := string(body)
 
 	hash := util.CreateHash()
-	userId := util.CreateUUID()
-	short, err := store.Save(hash, URL, userId)
+	userID := util.CreateUUID()
+	short, err := store.Save(hash, URL, userID)
 
 	switch {
 	case errors.Is(err, storage.ErrConflict):

@@ -7,8 +7,12 @@ var (
 	userHashes = make(map[string][]URL)
 )
 
-func (m MapStorage) Save(hash string, url string, userId string) (string, error) {
+func (m MapStorage) Save(hash string, url string, userID string) (string, error) {
 	mapHashes[hash] = url
+	userHashes[userID] = append(userHashes[userID], URL{
+		Short:    hash,
+		Original: url,
+	})
 
 	return hash, nil
 }

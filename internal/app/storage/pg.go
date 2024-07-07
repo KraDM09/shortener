@@ -16,14 +16,14 @@ func (pg PG) NewStore(conn *pgx.Conn) *PG {
 	return &PG{conn: conn}
 }
 
-func (pg PG) Save(hash string, url string, userId string) (string, error) {
+func (pg PG) Save(hash string, url string, userID string) (string, error) {
 	row, err := pg.conn.Exec(context.Background(),
 		"INSERT INTO shortener.urls (uuid, original, short, user_id)"+
 			"VALUES ($1, $2, $3, $4) ON CONFLICT (original) DO NOTHING RETURNING *",
 		util.CreateUUID(),
 		url,
 		hash,
-		userId,
+		userID,
 	)
 	if err != nil {
 		return "", err

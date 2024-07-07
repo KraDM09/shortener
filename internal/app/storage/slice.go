@@ -10,11 +10,11 @@ type Link struct {
 
 var hashes []Link
 
-func (s SliceStorage) Save(hash string, url string, userId string) (string, error) {
+func (s SliceStorage) Save(hash string, url string, userID string) (string, error) {
 	hashes = append(hashes, Link{
 		Hash:   hash,
 		URL:    url,
-		UserID: userId,
+		UserID: userID,
 	})
 
 	return hash, nil

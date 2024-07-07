@@ -26,8 +26,8 @@ func ShortenHandler(
 	}
 
 	hash := util.CreateHash()
-	userId := r.Context().Value(constants.ContextUserIDKey).(string)
-	short, err := store.Save(hash, req.URL, userId)
+	userID := r.Context().Value(constants.ContextUserIDKey).(string)
+	short, err := store.Save(hash, req.URL, userID)
 
 	rw.Header().Set("Content-Type", "application/json")
 

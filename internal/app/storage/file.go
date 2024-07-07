@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -19,13 +18,13 @@ type FileRow struct {
 	UserID      string `json:"user_id"`
 }
 
-func (s FileStorage) Save(hash string, url string, userId string) (string, error) {
+func (s FileStorage) Save(hash string, url string, userID string) (string, error) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
 		UUID:        util.CreateUUID(),
 		ShortURL:    hash,
 		OriginalURL: url,
-		UserID:      userId,
+		UserID:      userID,
 	})
 	if err != nil {
 		return "", err
@@ -108,5 +107,33 @@ func (s FileStorage) SaveBatch(batch []URL, userID string) error {
 }
 
 func (s FileStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
-	return nil, fmt.Errorf("not implemented")
+	URLs := make([]URL, 0)
+
+	file, err := os.Open(config.FlagFileStoragePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	row := FileRow{}
+
+	for scanner.Scan() {
+		err := json.Unmarshal(scanner.Bytes(), &row)
+		if err != nil {
+			return nil, err
+		}
+
+		if row.UserID == userID {
+			URLs = append(URLs, URL{
+				Short:    row.ShortURL,
+				Original: row.OriginalURL,
+			})
+			break
+		}
+
+	}
+
+	return &URLs, nil
 }

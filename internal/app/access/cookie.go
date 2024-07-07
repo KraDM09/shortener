@@ -46,7 +46,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
 		}
 
-		if isNewToken != true {
+		if !isNewToken {
 			userID = GetUserID(token.Value)
 		}
 
