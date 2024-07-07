@@ -8,7 +8,6 @@ import (
 )
 
 type PG struct {
-	// Поле conn содержит объект соединения с СУБД
 	conn *pgx.Conn
 }
 
@@ -17,13 +16,14 @@ func (pg PG) NewStore(conn *pgx.Conn) *PG {
 	return &PG{conn: conn}
 }
 
-func (pg PG) Save(hash string, url string) (string, error) {
+func (pg PG) Save(hash string, url string, userId string) (string, error) {
 	row, err := pg.conn.Exec(context.Background(),
-		"INSERT INTO shortener.urls (uuid, original, short)"+
-			"VALUES ($1, $2, $3) ON CONFLICT (original) DO NOTHING RETURNING *",
+		"INSERT INTO shortener.urls (uuid, original, short, user_id)"+
+			"VALUES ($1, $2, $3, $4) ON CONFLICT (original) DO NOTHING RETURNING *",
 		util.CreateUUID(),
 		url,
 		hash,
+		userId,
 	)
 	if err != nil {
 		return "", err
@@ -41,16 +41,17 @@ func (pg PG) Save(hash string, url string) (string, error) {
 	return hash, nil
 }
 
-func (pg PG) SaveBatch(batch []URL) error {
+func (pg PG) SaveBatch(batch []URL, userID string) error {
 	_, err := pg.conn.CopyFrom(
 		context.Background(),
 		pgx.Identifier{"shortener", "urls"},
-		[]string{"uuid", "original", "short"},
+		[]string{"uuid", "original", "short", "user_id"},
 		pgx.CopyFromSlice(len(batch), func(i int) ([]any, error) {
 			return []any{
 				util.CreateUUID(),
 				batch[i].Original,
 				batch[i].Short,
+				userID,
 			}, nil
 		}),
 	)
@@ -123,16 +124,13 @@ func (pg PG) Get(hash string) (string, error) {
 
 // Bootstrap подготавливает БД к работе, создавая необходимые таблицы и индексы
 func (pg PG) Bootstrap(ctx context.Context) error {
-	// запускаем транзакцию
 	tx, err := pg.conn.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
-	// в случае неуспешного коммита все изменения транзакции будут отменены
 	defer tx.Rollback(ctx)
 
-	// создаём схему, если её нет
 	_, err = tx.Exec(ctx, `
         CREATE schema IF NOT EXISTS shortener
     `)
@@ -140,18 +138,49 @@ func (pg PG) Bootstrap(ctx context.Context) error {
 		return err
 	}
 
-	// создаём таблицу со ссылками, если её нет
 	_, err = tx.Exec(ctx, `
         CREATE TABLE IF NOT EXISTS shortener.urls (
             uuid UUID PRIMARY KEY,
             original TEXT NOT NULL UNIQUE,
-            short TEXT NOT NULL
+            short TEXT NOT NULL,
+            user_id UUID NOT NULL
         )
     `)
 	if err != nil {
 		return err
 	}
 
-	// коммитим транзакцию
 	return tx.Commit(ctx)
+}
+
+func (pg PG) GetUrlsByUserID(userID string) (*[]URL, error) {
+	rows, err := pg.conn.Query(context.Background(),
+		`SELECT short, original
+			 FROM shortener.urls
+			 WHERE user_id = $1`,
+		userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	urls := make([]URL, 0, 1)
+
+	for rows.Next() {
+		var r URL
+		err = rows.Scan(&r.Short, &r.Original)
+		if err != nil {
+			return nil, err
+		}
+		urls = append(urls, r)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return &urls, nil
 }

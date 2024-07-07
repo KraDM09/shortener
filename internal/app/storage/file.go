@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -15,14 +16,16 @@ type FileRow struct {
 	UUID        string `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
+	UserID      string `json:"user_id"`
 }
 
-func (s FileStorage) Save(hash string, url string) (string, error) {
+func (s FileStorage) Save(hash string, url string, userId string) (string, error) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
 		UUID:        util.CreateUUID(),
 		ShortURL:    hash,
 		OriginalURL: url,
+		UserID:      userId,
 	})
 	if err != nil {
 		return "", err
@@ -75,7 +78,7 @@ func (s FileStorage) Get(hash string) (string, error) {
 	return url, nil
 }
 
-func (s FileStorage) SaveBatch(batch []URL) error {
+func (s FileStorage) SaveBatch(batch []URL, userID string) error {
 	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
@@ -88,6 +91,7 @@ func (s FileStorage) SaveBatch(batch []URL) error {
 			UUID:        util.CreateUUID(),
 			ShortURL:    record.Short,
 			OriginalURL: record.Original,
+			UserID:      userID,
 		})
 		if err != nil {
 			return err
@@ -101,4 +105,8 @@ func (s FileStorage) SaveBatch(batch []URL) error {
 	}
 
 	return nil
+}
+
+func (s FileStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
+	return nil, fmt.Errorf("not implemented")
 }

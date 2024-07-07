@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/KraDM09/shortener/internal/constants"
+
 	"github.com/KraDM09/shortener/internal/app/config"
 
 	"github.com/KraDM09/shortener/internal/app/models"
@@ -54,7 +56,8 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := store.SaveBatch(batch); err != nil {
+	userID := r.Context().Value(constants.ContextUserIDKey).(string)
+	if err := store.SaveBatch(batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
