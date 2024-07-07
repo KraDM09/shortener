@@ -55,7 +55,6 @@ func (s SliceStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 		URLs = append(URLs, URL{
 			Short:    h.Hash,
 			Original: h.URL,
-			UserID:   h.UserID,
 		})
 	}
 

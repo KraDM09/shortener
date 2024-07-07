@@ -5,7 +5,6 @@ import "errors"
 type URL struct {
 	Short    string `json:"short_url" db:"short"`
 	Original string `json:"original_url" db:"original"`
-	UserID   string `json:"user_id" db:"user_id"`
 }
 
 // ErrConflict указывает на конфликт данных в хранилище.
