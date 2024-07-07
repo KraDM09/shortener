@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/KraDM09/shortener/internal/app/config"
@@ -18,7 +17,7 @@ type FileRow struct {
 	OriginalURL string `json:"original_url"`
 }
 
-func (s FileStorage) Save(hash string, url string) {
+func (s FileStorage) Save(hash string, url string) (string, error) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
 		UUID:        util.CreateUUID(),
@@ -26,12 +25,12 @@ func (s FileStorage) Save(hash string, url string) {
 		OriginalURL: url,
 	})
 	if err != nil {
-		return
+		return "", err
 	}
 
 	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	defer file.Close()
@@ -39,16 +38,18 @@ func (s FileStorage) Save(hash string, url string) {
 	data = append(data, '\n')
 
 	if _, err := file.Write(data); err != nil {
-		return
+		return "", err
 	}
+
+	return hash, nil
 }
 
-func (s FileStorage) Get(hash string) string {
+func (s FileStorage) Get(hash string) (string, error) {
 	var url string
 
 	file, err := os.Open(config.FlagFileStoragePath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer file.Close()
 
@@ -61,7 +62,7 @@ func (s FileStorage) Get(hash string) string {
 	for scanner.Scan() {
 		err := json.Unmarshal(scanner.Bytes(), &row)
 		if err != nil {
-			return url
+			return "", err
 		}
 
 		if row.ShortURL == hash {
@@ -71,5 +72,33 @@ func (s FileStorage) Get(hash string) string {
 
 	}
 
-	return url
+	return url, nil
+}
+
+func (s FileStorage) SaveBatch(batch []URL) error {
+	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	for _, record := range batch {
+		data, err := json.Marshal(FileRow{
+			UUID:        util.CreateUUID(),
+			ShortURL:    record.Short,
+			OriginalURL: record.Original,
+		})
+		if err != nil {
+			return err
+		}
+
+		data = append(data, '\n')
+
+		if _, err := file.Write(data); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

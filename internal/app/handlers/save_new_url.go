@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -19,12 +20,21 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 	URL := string(body)
 
 	hash := util.CreateHash()
-	store.Save(hash, URL)
+	short, err := store.Save(hash, URL)
+
+	switch {
+	case errors.Is(err, storage.ErrConflict):
+		hash = short
+		rw.WriteHeader(http.StatusConflict)
+	case err != nil:
+		http.Error(rw, "Не удалось сохранить URL", http.StatusInternalServerError)
+	}
 
 	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(http.StatusCreated)
 	_, err = rw.Write([]byte(config.FlagBaseShortURL + "/" + hash))
 	if err != nil {
-		panic(err)
+		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
+		return
 	}
 }
