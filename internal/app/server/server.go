@@ -43,7 +43,7 @@ func Run(
 	r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.BatchHandler(rw, r, store)
 	})
-	r.Post("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
 		user.UrlsHandler(rw, r, store)
 	})
 
