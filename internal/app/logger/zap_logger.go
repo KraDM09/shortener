@@ -92,12 +92,15 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 		duration := time.Since(start)
 
 		token, err := r.Cookie("token")
+		tokenValue := "-"
 
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
 			fmt.Print("токен отсутствует")
 		case err != nil:
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
+		default:
+			tokenValue = token.Value
 		}
 
 		Log.Info("got incoming HTTP request",
@@ -106,7 +109,7 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 			zap.Int("status", responseData.status),
 			zap.Duration("duration", duration),
 			zap.Int("size", responseData.size),
-			zap.String("token", token.Value),
+			zap.String("token", tokenValue),
 		)
 	}
 	return http.HandlerFunc(logFn)
