@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -91,7 +92,11 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 		duration := time.Since(start)
 
 		token, err := r.Cookie("token")
-		if err != nil {
+
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			fmt.Print("токен отсутствует")
+		case err != nil:
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
 		}
 
