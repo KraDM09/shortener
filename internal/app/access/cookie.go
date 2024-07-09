@@ -44,19 +44,16 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			})
 		case err != nil:
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
-		}
-
-		if !isNewToken {
+		default:
 			userID = GetUserID(token.Value)
 		}
 
-		if userID == "" {
+		if isNewToken {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		ctx := context.WithValue(r.Context(), constants.ContextUserIDKey, userID)
-
 		h.ServeHTTP(w, r.WithContext(ctx))
 	}
 
