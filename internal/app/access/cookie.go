@@ -25,16 +25,12 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var userID string
 		token, err := r.Cookie("token")
-		isNewToken := false
 
-		switch {
-		case errors.Is(err, http.ErrNoCookie):
+		if errors.Is(err, http.ErrNoCookie) && r.Method == http.MethodPost {
 			userID = util.CreateUUID()
 			token, err := GenerateJWT(userID)
-			isNewToken = true
-
 			if err != nil {
-				panic(fmt.Errorf("ошибка при генерации jwt для пользователя без токена %w", err))
+				panic(err)
 			}
 
 			http.SetCookie(w, &http.Cookie{
@@ -42,13 +38,13 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 				Value:   token,
 				Expires: time.Now().Add(24 * 7 * time.Hour),
 			})
-		case err != nil:
-			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
-		default:
+		} else if err != nil {
+			panic(err)
+		} else {
 			userID = GetUserID(token.Value)
 		}
 
-		if isNewToken {
+		if userID == "" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
