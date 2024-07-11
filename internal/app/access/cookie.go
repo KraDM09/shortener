@@ -29,6 +29,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 		if errors.Is(err, http.ErrNoCookie) {
 			if r.Method != http.MethodPost {
 				h.ServeHTTP(w, r)
+				return
 			}
 
 			userID = util.CreateUUID()
@@ -50,6 +51,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 
 		if userID == "" {
 			h.ServeHTTP(w, r)
+			return
 		}
 
 		ctx := context.WithValue(r.Context(), constants.ContextUserIDKey, userID)
