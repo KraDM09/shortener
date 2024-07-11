@@ -11,14 +11,20 @@ import (
 )
 
 func UrlsHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
-	userID := r.Context().Value(constants.ContextUserIDKey).(string)
+	rw.Header().Set("Content-Type", "application/json")
+	value := r.Context().Value(constants.ContextUserIDKey)
+
+	if value == nil {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userID := value.(string)
 	URLs, err := store.GetUrlsByUserID(userID)
 	if err != nil {
 		http.Error(rw, "Не удалось получить список адресов", http.StatusInternalServerError)
 		return
 	}
-
-	rw.Header().Set("Content-Type", "application/json")
 
 	if len(*URLs) == 0 {
 		rw.WriteHeader(http.StatusNoContent)

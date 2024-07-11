@@ -23,14 +23,14 @@ const SecretKey = "secret"
 
 func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			h.ServeHTTP(w, r)
-		}
-
 		var userID string
 		token, err := r.Cookie("token")
 
 		if errors.Is(err, http.ErrNoCookie) {
+			if r.Method != http.MethodPost {
+				h.ServeHTTP(w, r)
+			}
+
 			userID = util.CreateUUID()
 			token, err := GenerateJWT(userID)
 			if err != nil {
@@ -49,8 +49,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 		}
 
 		if userID == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
+			h.ServeHTTP(w, r)
 		}
 
 		ctx := context.WithValue(r.Context(), constants.ContextUserIDKey, userID)
