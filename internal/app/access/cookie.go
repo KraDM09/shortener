@@ -24,7 +24,7 @@ const SecretKey = "secret"
 func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			return
+			h.ServeHTTP(w, r)
 		}
 
 		var userID string
