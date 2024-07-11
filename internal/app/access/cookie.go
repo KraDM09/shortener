@@ -23,23 +23,25 @@ const SecretKey = "secret"
 
 func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			return
+		}
+
 		var userID string
 		token, err := r.Cookie("token")
 
 		if errors.Is(err, http.ErrNoCookie) {
-			if r.Method == http.MethodPost {
-				userID = util.CreateUUID()
-				token, err := GenerateJWT(userID)
-				if err != nil {
-					panic(fmt.Errorf("ошибка при генерации jwt для пользователя без токена %w", err))
-				}
-
-				http.SetCookie(w, &http.Cookie{
-					Name:    "token",
-					Value:   token,
-					Expires: time.Now().Add(24 * 7 * time.Hour),
-				})
+			userID = util.CreateUUID()
+			token, err := GenerateJWT(userID)
+			if err != nil {
+				panic(fmt.Errorf("ошибка при генерации jwt для пользователя без токена %w", err))
 			}
+
+			http.SetCookie(w, &http.Cookie{
+				Name:    "token",
+				Value:   token,
+				Expires: time.Now().Add(24 * 7 * time.Hour),
+			})
 		} else if err != nil {
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
 		} else {
