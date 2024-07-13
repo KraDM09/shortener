@@ -33,17 +33,17 @@ func Run(
 	r.Use(access.Request)
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.SaveNewURLHandler(rw, r, store, GetUserId(r))
+		handlers.SaveNewURLHandler(rw, r, store, GetUserID(r))
 	})
 	r.Get("/ping", handlers.PingHandler)
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetURLByHashHandler(rw, r, store)
 	})
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.ShortenHandler(rw, r, store, GetUserId(r))
+		handlers.ShortenHandler(rw, r, store, GetUserID(r))
 	})
 	r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.BatchHandler(rw, r, store, GetUserId(r))
+		handlers.BatchHandler(rw, r, store, GetUserID(r))
 	})
 	r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
 		user.UrlsHandler(rw, r, store)
@@ -53,6 +53,6 @@ func Run(
 	return http.ListenAndServe(config.FlagRunAddr, r)
 }
 
-func GetUserId(r *http.Request) string {
+func GetUserID(r *http.Request) string {
 	return r.Context().Value(constants.ContextUserIDKey).(string)
 }
