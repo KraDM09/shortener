@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/KraDM09/shortener/internal/constants"
-
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/models"
 	"github.com/KraDM09/shortener/internal/app/storage"
@@ -17,6 +15,7 @@ func ShortenHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
 	store storage.Storage,
+	userID string,
 ) {
 	var req models.ShortenRequest
 	dec := json.NewDecoder(r.Body)
@@ -26,7 +25,6 @@ func ShortenHandler(
 	}
 
 	hash := util.CreateHash()
-	userID := r.Context().Value(constants.ContextUserIDKey).(string)
 	short, err := store.Save(hash, req.URL, userID)
 
 	rw.Header().Set("Content-Type", "application/json")

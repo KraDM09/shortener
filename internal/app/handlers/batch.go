@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KraDM09/shortener/internal/constants"
-
 	"github.com/KraDM09/shortener/internal/app/config"
 
 	"github.com/KraDM09/shortener/internal/app/models"
@@ -19,7 +17,12 @@ type URL struct {
 	Short         string `json:"short_url"`
 }
 
-func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func BatchHandler(
+	rw http.ResponseWriter,
+	r *http.Request,
+	store storage.Storage,
+	userID string,
+) {
 	var req models.BatchRequest
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
@@ -55,15 +58,6 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
-
-	value := r.Context().Value(constants.ContextUserIDKey)
-
-	if value == nil {
-		rw.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	userID := value.(string)
 
 	if err := store.SaveBatch(batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)

@@ -9,6 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KraDM09/shortener/internal/app/util"
+
 	"github.com/KraDM09/shortener/internal/constants"
 	"golang.org/x/net/context"
 
@@ -47,7 +49,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.SaveNewURLHandler(writer, request, store)
+			handlers.SaveNewURLHandler(writer, request, store, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -82,7 +84,7 @@ func Test_handler2(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.ShortenHandler(writer, request, store)
+			handlers.ShortenHandler(writer, request, store, util.CreateUUID())
 		})
 		h(w, request)
 

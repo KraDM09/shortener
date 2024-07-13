@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 
+	"github.com/KraDM09/shortener/internal/constants"
+
 	"github.com/KraDM09/shortener/internal/app/access"
 	"github.com/KraDM09/shortener/internal/app/handlers/user"
 
@@ -31,17 +33,17 @@ func Run(
 	r.Use(access.Request)
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.SaveNewURLHandler(rw, r, store)
+		handlers.SaveNewURLHandler(rw, r, store, GetUserId(r))
 	})
 	r.Get("/ping", handlers.PingHandler)
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetURLByHashHandler(rw, r, store)
 	})
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.ShortenHandler(rw, r, store)
+		handlers.ShortenHandler(rw, r, store, GetUserId(r))
 	})
 	r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.BatchHandler(rw, r, store)
+		handlers.BatchHandler(rw, r, store, GetUserId(r))
 	})
 	r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
 		user.UrlsHandler(rw, r, store)
@@ -49,4 +51,8 @@ func Run(
 
 	logger.Info("Running server", "address", config.FlagRunAddr)
 	return http.ListenAndServe(config.FlagRunAddr, r)
+}
+
+func GetUserId(r *http.Request) string {
+	return r.Context().Value(constants.ContextUserIDKey).(string)
 }
