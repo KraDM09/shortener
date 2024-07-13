@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/KraDM09/shortener/internal/constants"
+
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/storage"
 	"github.com/KraDM09/shortener/internal/app/util"
@@ -19,8 +21,15 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 
 	URL := string(body)
 
+	value := r.Context().Value(constants.ContextUserIDKey)
+
+	if value == nil {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userID := value.(string)
 	hash := util.CreateHash()
-	userID := util.CreateUUID()
 	short, err := store.Save(hash, URL, userID)
 
 	switch {

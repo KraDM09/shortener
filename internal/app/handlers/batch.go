@@ -56,7 +56,15 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	userID := r.Context().Value(constants.ContextUserIDKey).(string)
+	value := r.Context().Value(constants.ContextUserIDKey)
+
+	if value == nil {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userID := value.(string)
+
 	if err := store.SaveBatch(batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
