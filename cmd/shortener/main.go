@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/KraDM09/shortener/internal/app/access"
+
 	"github.com/KraDM09/shortener/internal/app/compressor"
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/logger"
@@ -49,8 +51,9 @@ func main() {
 	r := &router.ChiRouter{}
 	log := &logger.ZapLogger{}
 	c := &compressor.GzipCompressor{}
+	a := &access.Cookie{}
 
-	if err := server.Run(store, r, log, c); err != nil {
+	if err := server.Run(store, r, log, c, a); err != nil {
 		panic(fmt.Errorf("ошибка во время старта сервиса %w", err))
 	}
 }

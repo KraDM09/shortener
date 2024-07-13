@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -89,12 +91,25 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
+		token, err := r.Cookie("token")
+		tokenValue := "-"
+
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			fmt.Print("токен отсутствует")
+		case err != nil:
+			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
+		default:
+			tokenValue = token.Value
+		}
+
 		Log.Info("got incoming HTTP request",
 			zap.String("uri", r.RequestURI),
 			zap.String("method", r.Method),
 			zap.Int("status", responseData.status),
 			zap.Duration("duration", duration),
 			zap.Int("size", responseData.size),
+			zap.String("token", tokenValue),
 		)
 	}
 	return http.HandlerFunc(logFn)

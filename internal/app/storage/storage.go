@@ -11,7 +11,8 @@ type URL struct {
 var ErrConflict = errors.New("data conflict")
 
 type Storage interface {
-	Save(hash string, url string) (string, error)
+	Save(hash string, url string, userID string) (string, error)
 	Get(hash string) (string, error)
-	SaveBatch(batch []URL) error
+	SaveBatch(batch []URL, userID string) error
+	GetUrlsByUserID(userID string) (*[]URL, error)
 }
