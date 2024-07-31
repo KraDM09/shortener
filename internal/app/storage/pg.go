@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/KraDM09/shortener/internal/app/util"
 	"github.com/jackc/pgx/v5"
@@ -92,13 +94,13 @@ func (pg PG) GetHashByOriginal(original string) (string, error) {
 	return records[0].Short, nil
 }
 
-func (pg PG) Get(hash string) (string, error) {
+func (pg PG) Get(hash string) (*URL, error) {
 	rows, err := pg.conn.Query(context.Background(),
-		"SELECT original FROM shortener.urls WHERE short = $1",
+		"SELECT original, is_deleted FROM shortener.urls WHERE short = $1",
 		hash,
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -107,19 +109,19 @@ func (pg PG) Get(hash string) (string, error) {
 
 	for rows.Next() {
 		var r URL
-		err = rows.Scan(&r.Original)
+		err = rows.Scan(&r.Original, &r.IsDeleted)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		records = append(records, r)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return records[0].Original, nil
+	return &records[0], nil
 }
 
 // Bootstrap подготавливает БД к работе, создавая необходимые таблицы и индексы
@@ -143,7 +145,8 @@ func (pg PG) Bootstrap(ctx context.Context) error {
             uuid UUID PRIMARY KEY,
             original TEXT NOT NULL UNIQUE,
             short TEXT NOT NULL,
-            user_id UUID NOT NULL
+            user_id UUID NOT NULL,
+            is_deleted BOOL DEFAULT FALSE
         )
     `)
 	if err != nil {
@@ -183,4 +186,68 @@ func (pg PG) GetUrlsByUserID(userID string) (*[]URL, error) {
 	}
 
 	return &urls, nil
+}
+
+func (pg PG) DeleteUrls(ctx context.Context, deleteHashes ...DeleteHash) error {
+	// соберём данные для создания запроса с групповым обновлением
+	var values []string
+	for _, hash := range deleteHashes {
+		// в нашем запросе по 2 параметра на каждое сообщение
+		params := fmt.Sprintf("('%s', '%s')", hash.UserID, hash.Short)
+		values = append(values, params)
+	}
+
+	// составляем строку запроса
+	query := `UPDATE shortener.urls
+	SET is_deleted = TRUE
+	FROM (VALUES ` + strings.Join(values, ",") + `) AS new_values (user_id, short)
+	WHERE urls.user_id = new_values.user_id::UUID
+	  AND urls.short = new_values.short
+	  AND urls.is_deleted = FALSE;`
+
+	// добавляем новые сообщения в БД
+	_, err := pg.conn.Exec(ctx, query)
+
+	return err
+}
+
+func (pg PG) GetQuantityUserShortUrls(
+	userID string,
+	shortUrls *[]string,
+) (int, error) {
+	var values []string
+	for _, short := range *shortUrls {
+		params := fmt.Sprintf("'%s'", short)
+		values = append(values, params)
+	}
+
+	rows, err := pg.conn.Query(context.Background(),
+		`SELECT count(short) AS quantity
+			FROM shortener.urls
+			WHERE user_id = $1::UUID
+			  AND is_deleted = FALSE
+			  AND short IN (`+strings.Join(values, ",")+`);`,
+		userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	defer rows.Close()
+
+	quantity := 0
+
+	for rows.Next() {
+		err = rows.Scan(&quantity)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return 0, err
+	}
+
+	return quantity, nil
 }

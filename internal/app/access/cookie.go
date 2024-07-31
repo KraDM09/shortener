@@ -24,7 +24,7 @@ const SecretKey = "secret"
 func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var userID string
-		token, err := r.Cookie("token")
+		token, err := r.Cookie(constants.CookieTokenKey)
 
 		if errors.Is(err, http.ErrNoCookie) {
 			if r.Method != http.MethodPost {
@@ -39,9 +39,10 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:    "token",
+				Name:    constants.CookieTokenKey,
 				Value:   token,
 				Expires: time.Now().Add(24 * 7 * time.Hour),
+				Path:    "/",
 			})
 		} else if err != nil {
 			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/KraDM09/shortener/internal/constants"
+
 	"go.uber.org/zap"
 )
 
@@ -73,6 +75,10 @@ func (logger ZapLogger) Info(msg string, key string, value string) {
 	Log.Info(msg, zap.String(key, value))
 }
 
+func (logger ZapLogger) Error(msg string, key string, value string) {
+	Log.Error(msg, zap.String(key, value))
+}
+
 // WithLogging добавляет дополнительный код для регистрации сведений о запросе
 // и возвращает новый http.Handler.
 func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
@@ -91,7 +97,7 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		token, err := r.Cookie("token")
+		token, err := r.Cookie(constants.CookieTokenKey)
 		tokenValue := "-"
 
 		switch {
