@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -32,7 +31,8 @@ func SaveNewURLHandler(
 		hash = short
 		rw.WriteHeader(http.StatusConflict)
 	case err != nil:
-		http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s short= %s err= %s", URL, hash, short, err.Error()), http.StatusInternalServerError)
+		short = "error"
+		// http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s short= %s err= %s", URL, hash, short, err.Error()), http.StatusInternalServerError)
 	}
 
 	rw.Header().Set("Content-Type", "text/plain")
