@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/KraDM09/shortener/internal/app/logger"
+
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/storage"
 	"github.com/KraDM09/shortener/internal/app/util"
@@ -14,6 +16,7 @@ func SaveNewURLHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
 	store storage.Storage,
+	logger logger.Logger,
 	userID string,
 ) {
 	body, err := io.ReadAll(r.Body)
@@ -31,6 +34,7 @@ func SaveNewURLHandler(
 		hash = short
 		rw.WriteHeader(http.StatusConflict)
 	case err != nil:
+		logger.Error("error", "error", err.Error())
 		http.Error(rw, "Не удалось сохранить URL", http.StatusInternalServerError)
 	}
 
