@@ -38,5 +38,4 @@ func GetURLByHashHandler(
 
 	rw.Header().Set("Location", URL.Original)
 	rw.WriteHeader(http.StatusTemporaryRedirect)
-	return
 }
