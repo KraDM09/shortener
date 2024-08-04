@@ -33,17 +33,19 @@ func DeleteUrlsHandler(
 		shortUrls = append(shortUrls, hash)
 	}
 
-	quantity, err := store.GetQuantityUserShortUrls(userID, &shortUrls)
+	/*
+		quantity, err := store.GetQuantityUserShortUrls(userID, &shortUrls)
 
-	if quantity != len(urls) {
-		http.Error(rw, "Не все URL принадлежат пользователю или существуют", http.StatusBadRequest)
-		return
-	}
+		if err != nil {
+			http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
+			return
+		}
 
-	if err != nil {
-		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
-		return
-	}
+		if quantity != len(urls) {
+			http.Error(rw, "Не все URL принадлежат пользователю или существуют", http.StatusBadRequest)
+			return
+		}
+	*/
 
 	for i := range urls {
 		// положим в очередь на удаление
