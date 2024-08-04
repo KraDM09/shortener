@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -49,6 +50,7 @@ type (
 	responseData struct {
 		status int
 		size   int
+		body   bytes.Buffer
 	}
 
 	// добавляем реализацию http.ResponseWriter
@@ -61,7 +63,8 @@ type (
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	// записываем ответ, используя оригинальный http.ResponseWriter
 	size, err := r.ResponseWriter.Write(b)
-	r.responseData.size += size // захватываем размер
+	r.responseData.size += size  // захватываем размер
+	r.responseData.body.Write(b) // Сохраняем записанные данные
 	return size, err
 }
 
@@ -115,6 +118,7 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 			zap.Int("status", responseData.status),
 			zap.Duration("duration", duration),
 			zap.Int("size", responseData.size),
+			zap.String("responseBody", responseData.body.String()), // Логирование тела ответа
 			zap.String("token", tokenValue),
 		)
 	}

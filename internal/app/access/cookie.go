@@ -90,6 +90,5 @@ func GetUserID(tokenString string) string {
 		return ""
 	}
 
-	fmt.Println("Token os valid")
 	return claims.UserID
 }
