@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/storage"
@@ -23,7 +24,7 @@ func SaveNewURLHandler(
 		return
 	}
 
-	URL := string(body)
+	URL := strings.TrimSuffix(string(body), "\n")
 	hash := util.CreateHash()
 	short, err := store.Save(hash, URL, userID)
 
