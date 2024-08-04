@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -112,14 +113,20 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 			tokenValue = token.Value
 		}
 
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			panic(fmt.Errorf("ошибка чтения тела запроса %w", err))
+		}
+
 		Log.Info("got incoming HTTP request",
 			zap.String("uri", r.RequestURI),
 			zap.String("method", r.Method),
 			zap.Int("status", responseData.status),
 			zap.Duration("duration", duration),
 			zap.Int("size", responseData.size),
-			zap.String("responseBody", responseData.body.String()), // Логирование тела ответа
 			zap.String("token", tokenValue),
+			zap.String("requestBody", string(body)),                // Логирование тела запроса
+			zap.String("responseBody", responseData.body.String()), // Логирование тела ответа
 		)
 	}
 	return http.HandlerFunc(logFn)
