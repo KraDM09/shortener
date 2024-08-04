@@ -9,6 +9,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KraDM09/shortener/internal/app/util"
+
+	"github.com/KraDM09/shortener/internal/constants"
+	"golang.org/x/net/context"
+
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/handlers"
 	"github.com/KraDM09/shortener/internal/app/models"
@@ -21,6 +26,7 @@ var (
 	endpoint string
 	url      = "https://practicum.yandex.ru/profile/go-advanced/"
 	store    = &storage.MapStorage{}
+	userID   = "dabff768-c23d-4f8a-825d-7af2089ec901"
 )
 
 func testGetURLByHash(t *testing.T) {
@@ -43,7 +49,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.SaveNewURLHandler(writer, request, store)
+			handlers.SaveNewURLHandler(writer, request, store, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -71,10 +77,14 @@ func Test_handler2(t *testing.T) {
 			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 
+		ctx := context.WithValue(context.Background(), constants.ContextUserIDKey, userID)
+
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/api/shorten", bytes.NewBufferString(string(jsonData)))
+		request = request.WithContext(ctx)
+
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.ShortenHandler(writer, request, store)
+			handlers.ShortenHandler(writer, request, store, util.CreateUUID())
 		})
 		h(w, request)
 

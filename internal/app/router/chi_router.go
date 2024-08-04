@@ -14,6 +14,10 @@ func (router ChiRouter) Post(pattern string, fn http.HandlerFunc) {
 	chiRouter.Post(pattern, fn)
 }
 
+func (router ChiRouter) Delete(pattern string, fn http.HandlerFunc) {
+	chiRouter.Delete(pattern, fn)
+}
+
 func (router ChiRouter) Get(pattern string, fn http.HandlerFunc) {
 	chiRouter.Get(pattern, fn)
 }
