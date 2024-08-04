@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -22,7 +23,7 @@ func GetURLByHashHandler(
 	id := strings.TrimLeft(parsedURL.Path, "/")
 	URL, err := store.Get(id)
 	if err != nil {
-		http.Error(rw, "Не удалось получить адрес", http.StatusBadRequest)
+		http.Error(rw, fmt.Sprintf("Не удалось получить адрес %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
