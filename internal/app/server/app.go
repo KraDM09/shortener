@@ -80,7 +80,7 @@ func (a *app) webhook() router.Router {
 // flushHashes постоянно удаляет несколько хешей из хранилища с определённым интервалом
 func (a *app) flushHashes() {
 	// будем сохранять хеши, накопленные за последние 10 секунд
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 
 	var deleteHashes []storage.DeleteHash
 
