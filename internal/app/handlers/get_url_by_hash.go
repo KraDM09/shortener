@@ -14,7 +14,7 @@ func GetURLByHashHandler(
 	r *http.Request,
 	store storage.Storage,
 ) {
-	parsedURL, err := url.Parse(strings.TrimSpace(r.RequestURI))
+	parsedURL, err := url.Parse(r.RequestURI)
 	if err != nil {
 		http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
 		return
