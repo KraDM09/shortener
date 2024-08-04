@@ -8,11 +8,11 @@ import (
 )
 
 func CreateHash() string {
-	alphabet := "abcdefghijklmnopqrstuvwxyz"
+	alphabet := "abcdefghijklmnopqrstuvwxyz1234567890"
 	hash := ""
 
 	for i := 0; i < 6; i++ {
-		randomNumber := rand.Intn(26)
+		randomNumber := rand.Intn(36)
 		char := string(alphabet[randomNumber])
 
 		if rand.Intn(2) == 1 {
