@@ -45,6 +45,7 @@ func SaveNewURLHandler(
 		return
 	case short == "":
 		http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s", URL, hash), http.StatusInternalServerError)
+		return
 	}
 
 	rw.Header().Set("Content-Type", "text/plain")
