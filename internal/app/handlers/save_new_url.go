@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/app/storage"
@@ -26,12 +24,6 @@ func SaveNewURLHandler(
 	}
 
 	URL := string(body)
-
-	_, err = url.Parse(strings.TrimSpace(URL))
-	if err != nil {
-		http.Error(rw, fmt.Sprintf("Не удалось распарсить URL= %s err= %s", URL, err.Error()), http.StatusBadRequest)
-		return
-	}
 
 	hash := util.CreateHash()
 	short, err := store.Save(hash, URL, userID)

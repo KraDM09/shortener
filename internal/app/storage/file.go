@@ -152,7 +152,7 @@ func (s FileStorage) DeleteUrls(_ context.Context, deleteHashes ...DeleteHash) e
 	defer file.Close()
 
 	// временный файл для записи
-	tempFile, err := os.CreateTemp(config.FlagFileStoragePath, "tempFile")
+	tempFile, err := os.CreateTemp("./", "tempFile")
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,6 @@ func (s FileStorage) DeleteUrls(_ context.Context, deleteHashes ...DeleteHash) e
 
 		if s.Contains(&deleteHashes, row.ShortURL, row.UserID) && !row.IsDeleted {
 			row.IsDeleted = true
-			break
 		}
 
 		updatedRow, err := json.Marshal(row)
@@ -252,7 +251,6 @@ func (s FileStorage) GetQuantityUserShortUrls(
 
 		if s.Contains(&deleteHash, row.ShortURL, row.UserID) && !row.IsDeleted {
 			quantity++
-			break
 		}
 	}
 

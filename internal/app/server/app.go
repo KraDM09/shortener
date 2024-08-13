@@ -97,7 +97,7 @@ func (a *app) flushHashes() {
 			// удалим все пришедшие хеши одновременно
 			err := a.store.DeleteUrls(context.Background(), deleteHashes...)
 			if err != nil {
-				a.logger.Error("cannot save deleteHashes", "error", err.Error())
+				a.logger.Error("cannot delete hashes", "error", err.Error())
 				// не будем стирать сообщения, попробуем отправить их чуть позже
 				continue
 			}
