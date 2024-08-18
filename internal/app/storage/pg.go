@@ -5,21 +5,23 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/KraDM09/shortener/internal/app/util"
 	"github.com/jackc/pgx/v5"
 )
 
 type PG struct {
-	conn *pgx.Conn
+	pool *pgxpool.Pool
 }
 
 // NewStore возвращает новый экземпляр PostgreSQL-хранилища
-func (pg PG) NewStore(conn *pgx.Conn) *PG {
-	return &PG{conn: conn}
+func (pg PG) NewStore(pool *pgxpool.Pool) *PG {
+	return &PG{pool: pool}
 }
 
 func (pg PG) Save(hash string, url string, userID string) (string, error) {
-	row, err := pg.conn.Exec(context.Background(),
+	row, err := pg.pool.Exec(context.Background(),
 		"INSERT INTO shortener.urls (uuid, original, short, user_id)"+
 			"VALUES ($1, $2, $3, $4) ON CONFLICT (original) DO NOTHING RETURNING *",
 		util.CreateUUID(),
@@ -44,7 +46,7 @@ func (pg PG) Save(hash string, url string, userID string) (string, error) {
 }
 
 func (pg PG) SaveBatch(batch []URL, userID string) error {
-	_, err := pg.conn.CopyFrom(
+	_, err := pg.pool.CopyFrom(
 		context.Background(),
 		pgx.Identifier{"shortener", "urls"},
 		[]string{"uuid", "original", "short", "user_id"},
@@ -65,7 +67,7 @@ func (pg PG) SaveBatch(batch []URL, userID string) error {
 }
 
 func (pg PG) GetHashByOriginal(original string) (string, error) {
-	rows, err := pg.conn.Query(context.Background(),
+	rows, err := pg.pool.Query(context.Background(),
 		"SELECT short FROM shortener.urls WHERE original = $1",
 		original,
 	)
@@ -95,7 +97,7 @@ func (pg PG) GetHashByOriginal(original string) (string, error) {
 }
 
 func (pg PG) Get(hash string) (*URL, error) {
-	rows, err := pg.conn.Query(context.Background(),
+	rows, err := pg.pool.Query(context.Background(),
 		"SELECT original, is_deleted FROM shortener.urls WHERE short = $1",
 		hash,
 	)
@@ -126,7 +128,7 @@ func (pg PG) Get(hash string) (*URL, error) {
 
 // Bootstrap подготавливает БД к работе, создавая необходимые таблицы и индексы
 func (pg PG) Bootstrap(ctx context.Context) error {
-	tx, err := pg.conn.Begin(ctx)
+	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -157,7 +159,7 @@ func (pg PG) Bootstrap(ctx context.Context) error {
 }
 
 func (pg PG) GetUrlsByUserID(userID string) (*[]URL, error) {
-	rows, err := pg.conn.Query(context.Background(),
+	rows, err := pg.pool.Query(context.Background(),
 		`SELECT short, original
 			 FROM shortener.urls
 			 WHERE user_id = $1`,
@@ -206,7 +208,7 @@ func (pg PG) DeleteUrls(ctx context.Context, deleteHashes ...DeleteHash) error {
 	  AND urls.is_deleted = FALSE;`
 
 	// добавляем новые сообщения в БД
-	_, err := pg.conn.Exec(ctx, query)
+	_, err := pg.pool.Exec(ctx, query)
 
 	return err
 }
@@ -221,7 +223,7 @@ func (pg PG) GetQuantityUserShortUrls(
 		values = append(values, params)
 	}
 
-	rows, err := pg.conn.Query(context.Background(),
+	rows, err := pg.pool.Query(context.Background(),
 		`SELECT count(short) AS quantity
 			FROM shortener.urls
 			WHERE user_id = $1::UUID

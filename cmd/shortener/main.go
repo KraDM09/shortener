@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/KraDM09/shortener/internal/app/access"
 
 	"github.com/KraDM09/shortener/internal/app/compressor"
@@ -12,19 +14,16 @@ import (
 	"github.com/KraDM09/shortener/internal/app/router"
 	"github.com/KraDM09/shortener/internal/app/server"
 	"github.com/KraDM09/shortener/internal/app/storage"
-	"github.com/jackc/pgx/v5"
 )
 
 func getStorage() (storage.Storage, error) {
 	if len(config.FlagDatabaseDsn) > 0 {
-		conn, err := pgx.Connect(context.Background(), config.FlagDatabaseDsn)
+		pool, err := pgxpool.New(context.Background(), config.FlagDatabaseDsn)
 		if err != nil {
 			return nil, err
 		}
 
-		defer conn.Close(context.Background())
-
-		pg := storage.PG{}.NewStore(conn)
+		pg := storage.PG{}.NewStore(pool)
 		err = pg.Bootstrap(context.Background())
 		if err != nil {
 			return nil, err
