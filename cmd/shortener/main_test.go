@@ -7,7 +7,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+
+	"github.com/KraDM09/shortener/internal/app/storage/mocks"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/KraDM09/shortener/internal/app/util"
 
@@ -112,4 +116,28 @@ func Test_handler2(t *testing.T) {
 	})
 
 	t.Run("testGetURLByHash", testGetURLByHash)
+}
+
+var shortURL string
+
+func Test_save_new_url(t *testing.T) {
+	t.Run("SaveNewUrl", func(t *testing.T) {
+		storageProvider := new(mocks.Storage)
+		storageProvider.
+			On("Save", mock.Anything, mock.Anything, mock.Anything).
+			Return(mock.Anything, nil)
+
+		reqBody := bytes.NewBufferString(url)
+		req := httptest.NewRequest(http.MethodPost, "/save", reqBody)
+		rr := httptest.NewRecorder()
+
+		handlers.SaveNewURLHandler(rr, req, storageProvider, "user-id")
+
+		assert.Equal(t, http.StatusCreated, rr.Code)
+		assert.NotEmpty(t, rr.Body.String(), "Короткий URL не должен быть пуст")
+
+		shortURL = strings.TrimPrefix(rr.Body.String(), "/")
+		assert.Equal(t, 6, len(shortURL), "Длина короткого URL должна быть 6 символов")
+		storageProvider.AssertExpectations(t)
+	})
 }
