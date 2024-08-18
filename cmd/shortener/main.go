@@ -22,6 +22,8 @@ func getStorage() (storage.Storage, error) {
 			return nil, err
 		}
 
+		defer conn.Close(context.Background())
+
 		pg := storage.PG{}.NewStore(conn)
 		err = pg.Bootstrap(context.Background())
 		if err != nil {
