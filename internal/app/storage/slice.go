@@ -1,9 +1,5 @@
 package storage
 
-import (
-	"context"
-)
-
 type SliceStorage struct{}
 
 type Link struct {
@@ -72,7 +68,7 @@ func (s SliceStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &URLs, nil
 }
 
-func (s SliceStorage) DeleteUrls(_ context.Context, deleteHashes ...DeleteHash) error {
+func (s SliceStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
 	for _, hash := range deleteHashes {
 		link := s.Find(&hashes, hash.Short)
 

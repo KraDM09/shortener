@@ -17,10 +17,9 @@ type URL struct {
 	Short         string `json:"short_url"`
 }
 
-func BatchHandler(
+func (h *Handler) BatchHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
 	userID string,
 ) {
 	var req models.BatchRequest
@@ -59,7 +58,7 @@ func BatchHandler(
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := store.SaveBatch(batch, userID); err != nil {
+	if err := (*h.store).SaveBatch(batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

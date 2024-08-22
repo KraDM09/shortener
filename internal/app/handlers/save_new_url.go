@@ -11,10 +11,9 @@ import (
 	"github.com/KraDM09/shortener/internal/app/util"
 )
 
-func SaveNewURLHandler(
+func (h *Handler) SaveNewURLHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
 	userID string,
 ) {
 	body, err := io.ReadAll(r.Body)
@@ -26,7 +25,7 @@ func SaveNewURLHandler(
 	URL := string(body)
 
 	hash := util.CreateHash()
-	short, err := store.Save(hash, URL, userID)
+	short, err := (*h.store).Save(hash, URL, userID)
 
 	switch {
 	case errors.Is(err, storage.ErrConflict):

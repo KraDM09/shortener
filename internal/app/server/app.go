@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -54,24 +53,27 @@ func (a *app) webhook() router.Router {
 	a.router.Use(a.compressor.RequestCompressor)
 	a.router.Use(a.access.Request)
 
+	handler := handlers.NewHandler(a.store)
+	userHandler := user.NewHandler(a.store)
+
 	a.router.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.SaveNewURLHandler(rw, r, a.store, GetUserID(r))
+		handler.SaveNewURLHandler(rw, r, GetUserID(r))
 	})
 	a.router.Get("/ping", handlers.PingHandler)
 	a.router.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetURLByHashHandler(rw, r, a.store)
+		handler.GetURLByHashHandler(rw, r)
 	})
 	a.router.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.ShortenHandler(rw, r, a.store, GetUserID(r))
+		handler.ShortenHandler(rw, r, GetUserID(r))
 	})
 	a.router.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.BatchHandler(rw, r, a.store, GetUserID(r))
+		handler.BatchHandler(rw, r, GetUserID(r))
 	})
 	a.router.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		user.UrlsHandler(rw, r, a.store)
+		userHandler.UrlsHandler(rw, r)
 	})
 	a.router.Delete("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		user.DeleteUrlsHandler(rw, r, a.store, a.hashChan, GetUserID(r))
+		userHandler.DeleteUrlsHandler(rw, r, a.hashChan, GetUserID(r))
 	})
 
 	return a.router
@@ -95,7 +97,7 @@ func (a *app) flushHashes() {
 				continue
 			}
 			// удалим все пришедшие хеши одновременно
-			err := a.store.DeleteUrls(context.Background(), deleteHashes...)
+			err := a.store.DeleteUrls(deleteHashes...)
 			if err != nil {
 				a.logger.Error("cannot delete hashes", "error", err.Error())
 				// не будем стирать сообщения, попробуем отправить их чуть позже

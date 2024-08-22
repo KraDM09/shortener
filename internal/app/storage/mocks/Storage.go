@@ -3,8 +3,6 @@
 package mocks
 
 import (
-	context "context"
-
 	storage "github.com/KraDM09/shortener/internal/app/storage"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -14,14 +12,13 @@ type Storage struct {
 	mock.Mock
 }
 
-// DeleteUrls provides a mock function with given fields: ctx, deleteHashes
-func (_m *Storage) DeleteUrls(ctx context.Context, deleteHashes ...storage.DeleteHash) error {
+// DeleteUrls provides a mock function with given fields: deleteHashes
+func (_m *Storage) DeleteUrls(deleteHashes ...storage.DeleteHash) error {
 	_va := make([]interface{}, len(deleteHashes))
 	for _i := range deleteHashes {
 		_va[_i] = deleteHashes[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -30,8 +27,8 @@ func (_m *Storage) DeleteUrls(ctx context.Context, deleteHashes ...storage.Delet
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, ...storage.DeleteHash) error); ok {
-		r0 = rf(ctx, deleteHashes...)
+	if rf, ok := ret.Get(0).(func(...storage.DeleteHash) error); ok {
+		r0 = rf(deleteHashes...)
 	} else {
 		r0 = ret.Error(0)
 	}

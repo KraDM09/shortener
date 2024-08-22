@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"context"
 	"errors"
 )
 
@@ -42,7 +41,6 @@ type Storage interface {
 	) (*[]URL, error)
 
 	DeleteUrls(
-		ctx context.Context,
 		deleteHashes ...DeleteHash,
 	) error
 

@@ -1,7 +1,5 @@
 package storage
 
-import "context"
-
 type MapStorage struct{}
 
 var (
@@ -50,7 +48,7 @@ func (m MapStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &URLs, nil
 }
 
-func (m MapStorage) DeleteUrls(_ context.Context, deleteHashes ...DeleteHash) error {
+func (m MapStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
 	for _, hash := range deleteHashes {
 		userLinks := userHashes[hash.UserID]
 

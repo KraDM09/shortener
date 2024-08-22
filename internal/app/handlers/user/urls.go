@@ -6,11 +6,12 @@ import (
 
 	"github.com/KraDM09/shortener/internal/app/config"
 	"github.com/KraDM09/shortener/internal/constants"
-
-	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func UrlsHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func (h *Handler) UrlsHandler(
+	rw http.ResponseWriter,
+	r *http.Request,
+) {
 	rw.Header().Set("Content-Type", "application/json")
 	value := r.Context().Value(constants.ContextUserIDKey)
 
@@ -20,7 +21,7 @@ func UrlsHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage)
 	}
 
 	userID := value.(string)
-	URLs, err := store.GetUrlsByUserID(userID)
+	URLs, err := (*h.store).GetUrlsByUserID(userID)
 	if err != nil {
 		http.Error(rw, "Не удалось получить список адресов", http.StatusInternalServerError)
 		return

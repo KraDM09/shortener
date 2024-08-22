@@ -8,10 +8,9 @@ import (
 	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func DeleteUrlsHandler(
+func (h *Handler) DeleteUrlsHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
 	hashChan chan storage.DeleteHash,
 	userID string,
 ) {
@@ -33,7 +32,7 @@ func DeleteUrlsHandler(
 		shortUrls = append(shortUrls, hash)
 	}
 
-	quantity, err := store.GetQuantityUserShortUrls(userID, &shortUrls)
+	quantity, err := (*h.store).GetQuantityUserShortUrls(userID, &shortUrls)
 	if err != nil {
 		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
 		return

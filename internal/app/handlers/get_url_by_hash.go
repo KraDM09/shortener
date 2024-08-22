@@ -5,14 +5,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func GetURLByHashHandler(
+func (h *Handler) GetURLByHashHandler(
 	rw http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
 ) {
 	parsedURL, err := url.Parse(r.RequestURI)
 	if err != nil {
@@ -21,7 +18,7 @@ func GetURLByHashHandler(
 	}
 
 	id := strings.TrimLeft(parsedURL.Path, "/")
-	URL, err := store.Get(id)
+	URL, err := (*h.store).Get(id)
 	if err != nil {
 		http.Error(rw, fmt.Sprintf("Не удалось получить адрес %s", err.Error()), http.StatusBadRequest)
 		return

@@ -31,13 +31,16 @@ var (
 	url      = "https://practicum.yandex.ru/profile/go-advanced/"
 	store    = &storage.MapStorage{}
 	userID   = "dabff768-c23d-4f8a-825d-7af2089ec901"
+	handler  = handlers.NewHandler(store)
+	ctx      = context.Background()
 )
 
 func testGetURLByHash(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, endpoint, nil)
 	w := httptest.NewRecorder()
+
 	h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		handlers.GetURLByHashHandler(writer, request, store)
+		handler.GetURLByHashHandler(writer, request)
 	})
 	h(w, request)
 
@@ -53,7 +56,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.SaveNewURLHandler(writer, request, store, util.CreateUUID())
+			handler.SaveNewURLHandler(writer, request, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -81,14 +84,14 @@ func Test_handler2(t *testing.T) {
 			panic(fmt.Errorf("что-то пошло не так %w", err))
 		}
 
-		ctx := context.WithValue(context.Background(), constants.ContextUserIDKey, userID)
+		context := context.WithValue(ctx, constants.ContextUserIDKey, userID)
 
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/api/shorten", bytes.NewBufferString(string(jsonData)))
-		request = request.WithContext(ctx)
+		request = request.WithContext(context)
 
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handlers.ShortenHandler(writer, request, store, util.CreateUUID())
+			handler.ShortenHandler(writer, request, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -131,7 +134,8 @@ func Test_save_new_url(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/save", reqBody)
 		rr := httptest.NewRecorder()
 
-		handlers.SaveNewURLHandler(rr, req, storageProvider, "user-id")
+		h := handlers.NewHandler(storageProvider)
+		h.SaveNewURLHandler(rr, req, "user-id")
 
 		assert.Equal(t, http.StatusCreated, rr.Code)
 		assert.NotEmpty(t, rr.Body.String(), "Короткий URL не должен быть пуст")

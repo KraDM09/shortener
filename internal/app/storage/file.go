@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"os"
 
@@ -144,7 +143,7 @@ func (s FileStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &URLs, nil
 }
 
-func (s FileStorage) DeleteUrls(_ context.Context, deleteHashes ...DeleteHash) error {
+func (s FileStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
 	file, err := os.Open(config.FlagFileStoragePath)
 	if err != nil {
 		return err
