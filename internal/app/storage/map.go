@@ -1,5 +1,7 @@
 package storage
 
+import "context"
+
 type MapStorage struct{}
 
 var (
@@ -7,7 +9,12 @@ var (
 	userHashes = make(map[string][]URL)
 )
 
-func (m MapStorage) Save(hash string, url string, userID string) (string, error) {
+func (m MapStorage) Save(
+	_ context.Context,
+	hash string,
+	url string,
+	userID string,
+) (string, error) {
 	mapHashes[hash] = url
 	userHashes[userID] = append(userHashes[userID], URL{
 		Short:     hash,
@@ -18,7 +25,10 @@ func (m MapStorage) Save(hash string, url string, userID string) (string, error)
 	return hash, nil
 }
 
-func (m MapStorage) Get(hash string) (*URL, error) {
+func (m MapStorage) Get(
+	_ context.Context,
+	hash string,
+) (*URL, error) {
 	var url URL
 
 	for _, userLinks := range userHashes {
@@ -33,7 +43,11 @@ func (m MapStorage) Get(hash string) (*URL, error) {
 	return &url, nil
 }
 
-func (m MapStorage) SaveBatch(batch []URL, userID string) error {
+func (m MapStorage) SaveBatch(
+	_ context.Context,
+	batch []URL,
+	userID string,
+) error {
 	for _, record := range batch {
 		mapHashes[record.Short] = record.Original
 		userHashes[userID] = append(userHashes[userID], record)
@@ -42,13 +56,19 @@ func (m MapStorage) SaveBatch(batch []URL, userID string) error {
 	return nil
 }
 
-func (m MapStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
+func (m MapStorage) GetUrlsByUserID(
+	_ context.Context,
+	userID string,
+) (*[]URL, error) {
 	URLs := userHashes[userID]
 
 	return &URLs, nil
 }
 
-func (m MapStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
+func (m MapStorage) DeleteUrls(
+	_ context.Context,
+	deleteHashes ...DeleteHash,
+) error {
 	for _, hash := range deleteHashes {
 		userLinks := userHashes[hash.UserID]
 
@@ -74,6 +94,7 @@ func (m MapStorage) Find(links *[]URL, hash string) *URL {
 }
 
 func (m MapStorage) GetQuantityUserShortUrls(
+	_ context.Context,
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {

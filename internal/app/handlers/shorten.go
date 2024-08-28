@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 )
 
 func (h *Handler) ShortenHandler(
+	ctx context.Context,
 	rw http.ResponseWriter,
 	r *http.Request,
 	userID string,
@@ -24,7 +26,7 @@ func (h *Handler) ShortenHandler(
 	}
 
 	hash := util.CreateHash()
-	short, err := (*h.store).Save(hash, req.URL, userID)
+	short, err := (*h.store).Save(ctx, hash, req.URL, userID)
 
 	rw.Header().Set("Content-Type", "application/json")
 

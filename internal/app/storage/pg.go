@@ -15,7 +15,6 @@ import (
 
 type PG struct {
 	pool *pgxpool.Pool
-	ctx  context.Context
 }
 
 // NewStore возвращает новый экземпляр PostgreSQL-хранилища
@@ -27,12 +26,16 @@ func (pg PG) NewStore(ctx context.Context) (*PG, error) {
 
 	return &PG{
 		pool: pool,
-		ctx:  ctx,
 	}, nil
 }
 
-func (pg PG) Save(hash string, url string, userID string) (string, error) {
-	row, err := pg.pool.Exec(pg.ctx,
+func (pg PG) Save(
+	ctx context.Context,
+	hash string,
+	url string,
+	userID string,
+) (string, error) {
+	row, err := pg.pool.Exec(ctx,
 		"INSERT INTO shortener.urls (uuid, original, short, user_id)"+
 			"VALUES ($1, $2, $3, $4) ON CONFLICT (original) DO NOTHING RETURNING *",
 		util.CreateUUID(),
@@ -45,7 +48,7 @@ func (pg PG) Save(hash string, url string, userID string) (string, error) {
 	}
 
 	if row.RowsAffected() == 0 {
-		short, err := pg.GetHashByOriginal(url)
+		short, err := pg.GetHashByOriginal(ctx, url)
 		if err != nil {
 			return "", err
 		}
@@ -56,9 +59,13 @@ func (pg PG) Save(hash string, url string, userID string) (string, error) {
 	return hash, nil
 }
 
-func (pg PG) SaveBatch(batch []URL, userID string) error {
+func (pg PG) SaveBatch(
+	ctx context.Context,
+	batch []URL,
+	userID string,
+) error {
 	_, err := pg.pool.CopyFrom(
-		pg.ctx,
+		ctx,
 		pgx.Identifier{"shortener", "urls"},
 		[]string{"uuid", "original", "short", "user_id"},
 		pgx.CopyFromSlice(len(batch), func(i int) ([]any, error) {
@@ -77,8 +84,11 @@ func (pg PG) SaveBatch(batch []URL, userID string) error {
 	return nil
 }
 
-func (pg PG) GetHashByOriginal(original string) (string, error) {
-	rows, err := pg.pool.Query(pg.ctx,
+func (pg PG) GetHashByOriginal(
+	ctx context.Context,
+	original string,
+) (string, error) {
+	rows, err := pg.pool.Query(ctx,
 		"SELECT short FROM shortener.urls WHERE original = $1",
 		original,
 	)
@@ -107,9 +117,12 @@ func (pg PG) GetHashByOriginal(original string) (string, error) {
 	return records[0].Short, nil
 }
 
-func (pg PG) Get(hash string) (*URL, error) {
-	rows, err := pg.pool.Query(pg.ctx,
-		"SELECT original, is_deleted FROM shortener.urls WHERE short = $1",
+func (pg PG) Get(
+	ctx context.Context,
+	hash string,
+) (*URL, error) {
+	rows, err := pg.pool.Query(ctx,
+		"SELECT original, is_deleted FROM shortener.urls WHERE short = $1 LIMIT 1",
 		hash,
 	)
 	if err != nil {
@@ -138,22 +151,22 @@ func (pg PG) Get(hash string) (*URL, error) {
 }
 
 // Bootstrap подготавливает БД к работе, создавая необходимые таблицы и индексы
-func (pg PG) Bootstrap() error {
-	tx, err := pg.pool.Begin(pg.ctx)
+func (pg PG) Bootstrap(ctx context.Context) error {
+	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
-	defer tx.Rollback(pg.ctx)
+	defer tx.Rollback(ctx)
 
-	_, err = tx.Exec(pg.ctx, `
+	_, err = tx.Exec(ctx, `
         CREATE schema IF NOT EXISTS shortener
     `)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(pg.ctx, `
+	_, err = tx.Exec(ctx, `
         CREATE TABLE IF NOT EXISTS shortener.urls (
             uuid UUID PRIMARY KEY,
             original TEXT NOT NULL UNIQUE,
@@ -166,11 +179,14 @@ func (pg PG) Bootstrap() error {
 		return err
 	}
 
-	return tx.Commit(pg.ctx)
+	return tx.Commit(ctx)
 }
 
-func (pg PG) GetUrlsByUserID(userID string) (*[]URL, error) {
-	rows, err := pg.pool.Query(pg.ctx,
+func (pg PG) GetUrlsByUserID(
+	ctx context.Context,
+	userID string,
+) (*[]URL, error) {
+	rows, err := pg.pool.Query(ctx,
 		`SELECT short, original
 			 FROM shortener.urls
 			 WHERE user_id = $1`,
@@ -201,7 +217,10 @@ func (pg PG) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &urls, nil
 }
 
-func (pg PG) DeleteUrls(deleteHashes ...DeleteHash) error {
+func (pg PG) DeleteUrls(
+	ctx context.Context,
+	deleteHashes ...DeleteHash,
+) error {
 	// соберём данные для создания запроса с групповым обновлением
 	var values []string
 	for _, hash := range deleteHashes {
@@ -219,12 +238,13 @@ func (pg PG) DeleteUrls(deleteHashes ...DeleteHash) error {
 	  AND urls.is_deleted = FALSE;`
 
 	// добавляем новые сообщения в БД
-	_, err := pg.pool.Exec(pg.ctx, query)
+	_, err := pg.pool.Exec(ctx, query)
 
 	return err
 }
 
 func (pg PG) GetQuantityUserShortUrls(
+	ctx context.Context,
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {
@@ -234,7 +254,7 @@ func (pg PG) GetQuantityUserShortUrls(
 		values = append(values, params)
 	}
 
-	rows, err := pg.pool.Query(pg.ctx,
+	rows, err := pg.pool.Query(ctx,
 		`SELECT count(short) AS quantity
 			FROM shortener.urls
 			WHERE user_id = $1::UUID

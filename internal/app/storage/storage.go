@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"errors"
 )
 
@@ -22,29 +23,35 @@ var ErrConflict = errors.New("data conflict")
 //go:generate mockery --name=Storage
 type Storage interface {
 	Save(
+		ctx context.Context,
 		hash string,
 		url string,
 		userID string,
 	) (string, error)
 
 	Get(
+		ctx context.Context,
 		hash string,
 	) (*URL, error)
 
 	SaveBatch(
+		ctx context.Context,
 		batch []URL,
 		userID string,
 	) error
 
 	GetUrlsByUserID(
+		ctx context.Context,
 		userID string,
 	) (*[]URL, error)
 
 	DeleteUrls(
+		ctx context.Context,
 		deleteHashes ...DeleteHash,
 	) error
 
 	GetQuantityUserShortUrls(
+		ctx context.Context,
 		userID string,
 		shortUrls *[]string,
 	) (int, error)

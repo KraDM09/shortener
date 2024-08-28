@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"os"
 
@@ -19,7 +20,12 @@ type FileRow struct {
 	IsDeleted   bool   `json:"is_deleted"`
 }
 
-func (s FileStorage) Save(hash string, url string, userID string) (string, error) {
+func (s FileStorage) Save(
+	_ context.Context,
+	hash string,
+	url string,
+	userID string,
+) (string, error) {
 	// сериализуем структуру в JSON формат
 	data, err := json.Marshal(FileRow{
 		UUID:        util.CreateUUID(),
@@ -47,7 +53,10 @@ func (s FileStorage) Save(hash string, url string, userID string) (string, error
 	return hash, nil
 }
 
-func (s FileStorage) Get(hash string) (*URL, error) {
+func (s FileStorage) Get(
+	_ context.Context,
+	hash string,
+) (*URL, error) {
 	var url URL
 
 	file, err := os.Open(config.FlagFileStoragePath)
@@ -82,7 +91,11 @@ func (s FileStorage) Get(hash string) (*URL, error) {
 	return &url, nil
 }
 
-func (s FileStorage) SaveBatch(batch []URL, userID string) error {
+func (s FileStorage) SaveBatch(
+	_ context.Context,
+	batch []URL,
+	userID string,
+) error {
 	file, err := os.OpenFile(config.FlagFileStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o666)
 	if err != nil {
 		return err
@@ -111,7 +124,10 @@ func (s FileStorage) SaveBatch(batch []URL, userID string) error {
 	return nil
 }
 
-func (s FileStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
+func (s FileStorage) GetUrlsByUserID(
+	_ context.Context,
+	userID string,
+) (*[]URL, error) {
 	URLs := make([]URL, 0)
 
 	file, err := os.Open(config.FlagFileStoragePath)
@@ -143,7 +159,10 @@ func (s FileStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &URLs, nil
 }
 
-func (s FileStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
+func (s FileStorage) DeleteUrls(
+	_ context.Context,
+	deleteHashes ...DeleteHash,
+) error {
 	file, err := os.Open(config.FlagFileStoragePath)
 	if err != nil {
 		return err
@@ -219,6 +238,7 @@ func (s FileStorage) Contains(deleteHash *[]DeleteHash, hash string, userID stri
 }
 
 func (s FileStorage) GetQuantityUserShortUrls(
+	_ context.Context,
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {

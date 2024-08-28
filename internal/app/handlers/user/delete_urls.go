@@ -1,20 +1,21 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
-	"github.com/KraDM09/shortener/internal/app/models"
 	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
 func (h *Handler) DeleteUrlsHandler(
+	ctx context.Context,
 	rw http.ResponseWriter,
 	r *http.Request,
 	hashChan chan storage.DeleteHash,
 	userID string,
 ) {
-	var urls models.DeleteUrlsRequest
+	var urls []string
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&urls); err != nil {
 		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
@@ -32,7 +33,7 @@ func (h *Handler) DeleteUrlsHandler(
 		shortUrls = append(shortUrls, hash)
 	}
 
-	quantity, err := (*h.store).GetQuantityUserShortUrls(userID, &shortUrls)
+	quantity, err := (*h.store).GetQuantityUserShortUrls(ctx, userID, &urls)
 	if err != nil {
 		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
 		return

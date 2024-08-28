@@ -23,5 +23,3 @@ type Short struct {
 	CorrelationID UUID.UUID `json:"correlation_id"`
 	URL           string    `json:"short_url"`
 }
-
-type DeleteUrlsRequest []string

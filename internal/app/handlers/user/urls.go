@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func (h *Handler) UrlsHandler(
+	ctx context.Context,
 	rw http.ResponseWriter,
 	r *http.Request,
 ) {
@@ -21,7 +23,7 @@ func (h *Handler) UrlsHandler(
 	}
 
 	userID := value.(string)
-	URLs, err := (*h.store).GetUrlsByUserID(userID)
+	URLs, err := (*h.store).GetUrlsByUserID(ctx, userID)
 	if err != nil {
 		http.Error(rw, "Не удалось получить список адресов", http.StatusInternalServerError)
 		return

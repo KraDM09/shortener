@@ -19,7 +19,10 @@ type Claims struct {
 	UserID string `json:"user_id"`
 }
 
-const SecretKey = "secret"
+const (
+	SecretKey = "secret"
+	Lifetime  = 24 * 7 * time.Hour
+)
 
 func (c Cookie) Request(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -35,17 +38,17 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			userID = util.CreateUUID()
 			token, err := GenerateJWT(userID)
 			if err != nil {
-				panic(fmt.Errorf("ошибка при генерации jwt для пользователя без токена %w", err))
+				http.Error(w, fmt.Sprintf("ошибка при генерации jwt для пользователя без токена %s", err.Error()), http.StatusBadRequest)
 			}
 
 			http.SetCookie(w, &http.Cookie{
 				Name:    constants.CookieTokenKey,
 				Value:   token,
-				Expires: time.Now().Add(24 * 7 * time.Hour),
+				Expires: time.Now().Add(Lifetime),
 				Path:    "/",
 			})
 		} else if err != nil {
-			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
+			http.Error(w, fmt.Sprintf("ошибка при получении токена из куки %s", err.Error()), http.StatusBadRequest)
 		} else {
 			userID = GetUserID(token.Value)
 		}
@@ -65,6 +68,9 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 func GenerateJWT(userID string) (string, error) {
 	claims := &Claims{
 		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(Lifetime)),
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

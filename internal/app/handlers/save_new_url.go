@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 )
 
 func (h *Handler) SaveNewURLHandler(
+	ctx context.Context,
 	rw http.ResponseWriter,
 	r *http.Request,
 	userID string,
@@ -25,7 +27,7 @@ func (h *Handler) SaveNewURLHandler(
 	URL := string(body)
 
 	hash := util.CreateHash()
-	short, err := (*h.store).Save(hash, URL, userID)
+	short, err := (*h.store).Save(ctx, hash, URL, userID)
 
 	switch {
 	case errors.Is(err, storage.ErrConflict):

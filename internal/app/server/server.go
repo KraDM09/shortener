@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/KraDM09/shortener/internal/constants"
@@ -15,6 +16,7 @@ import (
 )
 
 func Run(
+	ctx context.Context,
 	store storage.Storage,
 	r router.Router,
 	logger logger.Logger,
@@ -26,10 +28,10 @@ func Run(
 	}
 
 	// создаём экземпляр приложения, передавая внешние зависимости
-	instance := newApp(store, r, logger, compressor, access)
+	instance := newApp(ctx, store, r, logger, compressor, access)
 
 	instance.logger.Info("Running server", "address", config.FlagRunAddr)
-	return http.ListenAndServe(config.FlagRunAddr, instance.webhook())
+	return http.ListenAndServe(config.FlagRunAddr, instance.webhook(ctx))
 }
 
 func GetUserID(r *http.Request) string {

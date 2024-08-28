@@ -40,7 +40,7 @@ func testGetURLByHash(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		handler.GetURLByHashHandler(writer, request)
+		handler.GetURLByHashHandler(ctx, writer, request)
 	})
 	h(w, request)
 
@@ -56,7 +56,7 @@ func Test_handler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, config.FlagBaseShortURL+"/", bytes.NewBufferString(url))
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handler.SaveNewURLHandler(writer, request, util.CreateUUID())
+			handler.SaveNewURLHandler(ctx, writer, request, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -91,7 +91,7 @@ func Test_handler2(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		h := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handler.ShortenHandler(writer, request, util.CreateUUID())
+			handler.ShortenHandler(ctx, writer, request, util.CreateUUID())
 		})
 		h(w, request)
 
@@ -127,7 +127,7 @@ func Test_save_new_url(t *testing.T) {
 	t.Run("SaveNewUrl", func(t *testing.T) {
 		storageProvider := new(mocks.Storage)
 		storageProvider.
-			On("Save", mock.Anything, mock.Anything, mock.Anything).
+			On("Save", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(mock.Anything, nil)
 
 		reqBody := bytes.NewBufferString(url)
@@ -135,7 +135,7 @@ func Test_save_new_url(t *testing.T) {
 		rr := httptest.NewRecorder()
 
 		h := handlers.NewHandler(storageProvider)
-		h.SaveNewURLHandler(rr, req, "user-id")
+		h.SaveNewURLHandler(ctx, rr, req, "user-id")
 
 		assert.Equal(t, http.StatusCreated, rr.Code)
 		assert.NotEmpty(t, rr.Body.String(), "Короткий URL не должен быть пуст")

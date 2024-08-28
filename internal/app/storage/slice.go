@@ -1,5 +1,7 @@
 package storage
 
+import "context"
+
 type SliceStorage struct{}
 
 type Link struct {
@@ -11,7 +13,12 @@ type Link struct {
 
 var hashes []Link
 
-func (s SliceStorage) Save(hash string, url string, userID string) (string, error) {
+func (s SliceStorage) Save(
+	_ context.Context,
+	hash string,
+	url string,
+	userID string,
+) (string, error) {
 	hashes = append(hashes, Link{
 		Hash:      hash,
 		URL:       url,
@@ -22,7 +29,10 @@ func (s SliceStorage) Save(hash string, url string, userID string) (string, erro
 	return hash, nil
 }
 
-func (s SliceStorage) Get(hash string) (*URL, error) {
+func (s SliceStorage) Get(
+	_ context.Context,
+	hash string,
+) (*URL, error) {
 	var url URL
 
 	for _, h := range hashes {
@@ -39,7 +49,11 @@ func (s SliceStorage) Get(hash string) (*URL, error) {
 	return &url, nil
 }
 
-func (s SliceStorage) SaveBatch(batch []URL, userID string) error {
+func (s SliceStorage) SaveBatch(
+	_ context.Context,
+	batch []URL,
+	userID string,
+) error {
 	for _, record := range batch {
 		hashes = append(hashes, Link{
 			Hash:      record.Short,
@@ -51,7 +65,10 @@ func (s SliceStorage) SaveBatch(batch []URL, userID string) error {
 	return nil
 }
 
-func (s SliceStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
+func (s SliceStorage) GetUrlsByUserID(
+	_ context.Context,
+	userID string,
+) (*[]URL, error) {
 	URLs := make([]URL, 0)
 
 	for _, h := range hashes {
@@ -68,7 +85,10 @@ func (s SliceStorage) GetUrlsByUserID(userID string) (*[]URL, error) {
 	return &URLs, nil
 }
 
-func (s SliceStorage) DeleteUrls(deleteHashes ...DeleteHash) error {
+func (s SliceStorage) DeleteUrls(
+	_ context.Context,
+	deleteHashes ...DeleteHash,
+) error {
 	for _, hash := range deleteHashes {
 		link := s.Find(&hashes, hash.Short)
 
@@ -94,6 +114,7 @@ func (s SliceStorage) Find(links *[]Link, hash string) *Link {
 }
 
 func (s SliceStorage) GetQuantityUserShortUrls(
+	_ context.Context,
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {

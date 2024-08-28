@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,6 +19,7 @@ type URL struct {
 }
 
 func (h *Handler) BatchHandler(
+	ctx context.Context,
 	rw http.ResponseWriter,
 	r *http.Request,
 	userID string,
@@ -58,7 +60,7 @@ func (h *Handler) BatchHandler(
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := (*h.store).SaveBatch(batch, userID); err != nil {
+	if err := (*h.store).SaveBatch(ctx, batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

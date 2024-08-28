@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	storage "github.com/KraDM09/shortener/internal/app/storage"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,13 +14,14 @@ type Storage struct {
 	mock.Mock
 }
 
-// DeleteUrls provides a mock function with given fields: deleteHashes
-func (_m *Storage) DeleteUrls(deleteHashes ...storage.DeleteHash) error {
+// DeleteUrls provides a mock function with given fields: ctx, deleteHashes
+func (_m *Storage) DeleteUrls(ctx context.Context, deleteHashes ...storage.DeleteHash) error {
 	_va := make([]interface{}, len(deleteHashes))
 	for _i := range deleteHashes {
 		_va[_i] = deleteHashes[_i]
 	}
 	var _ca []interface{}
+	_ca = append(_ca, ctx)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -27,8 +30,8 @@ func (_m *Storage) DeleteUrls(deleteHashes ...storage.DeleteHash) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(...storage.DeleteHash) error); ok {
-		r0 = rf(deleteHashes...)
+	if rf, ok := ret.Get(0).(func(context.Context, ...storage.DeleteHash) error); ok {
+		r0 = rf(ctx, deleteHashes...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -36,9 +39,9 @@ func (_m *Storage) DeleteUrls(deleteHashes ...storage.DeleteHash) error {
 	return r0
 }
 
-// Get provides a mock function with given fields: hash
-func (_m *Storage) Get(hash string) (*storage.URL, error) {
-	ret := _m.Called(hash)
+// Get provides a mock function with given fields: ctx, hash
+func (_m *Storage) Get(ctx context.Context, hash string) (*storage.URL, error) {
+	ret := _m.Called(ctx, hash)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
@@ -46,19 +49,19 @@ func (_m *Storage) Get(hash string) (*storage.URL, error) {
 
 	var r0 *storage.URL
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*storage.URL, error)); ok {
-		return rf(hash)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*storage.URL, error)); ok {
+		return rf(ctx, hash)
 	}
-	if rf, ok := ret.Get(0).(func(string) *storage.URL); ok {
-		r0 = rf(hash)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *storage.URL); ok {
+		r0 = rf(ctx, hash)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*storage.URL)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(hash)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, hash)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -66,9 +69,9 @@ func (_m *Storage) Get(hash string) (*storage.URL, error) {
 	return r0, r1
 }
 
-// GetQuantityUserShortUrls provides a mock function with given fields: userID, shortUrls
-func (_m *Storage) GetQuantityUserShortUrls(userID string, shortUrls *[]string) (int, error) {
-	ret := _m.Called(userID, shortUrls)
+// GetQuantityUserShortUrls provides a mock function with given fields: ctx, userID, shortUrls
+func (_m *Storage) GetQuantityUserShortUrls(ctx context.Context, userID string, shortUrls *[]string) (int, error) {
+	ret := _m.Called(ctx, userID, shortUrls)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetQuantityUserShortUrls")
@@ -76,17 +79,17 @@ func (_m *Storage) GetQuantityUserShortUrls(userID string, shortUrls *[]string) 
 
 	var r0 int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, *[]string) (int, error)); ok {
-		return rf(userID, shortUrls)
+	if rf, ok := ret.Get(0).(func(context.Context, string, *[]string) (int, error)); ok {
+		return rf(ctx, userID, shortUrls)
 	}
-	if rf, ok := ret.Get(0).(func(string, *[]string) int); ok {
-		r0 = rf(userID, shortUrls)
+	if rf, ok := ret.Get(0).(func(context.Context, string, *[]string) int); ok {
+		r0 = rf(ctx, userID, shortUrls)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, *[]string) error); ok {
-		r1 = rf(userID, shortUrls)
+	if rf, ok := ret.Get(1).(func(context.Context, string, *[]string) error); ok {
+		r1 = rf(ctx, userID, shortUrls)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -94,9 +97,9 @@ func (_m *Storage) GetQuantityUserShortUrls(userID string, shortUrls *[]string) 
 	return r0, r1
 }
 
-// GetUrlsByUserID provides a mock function with given fields: userID
-func (_m *Storage) GetUrlsByUserID(userID string) (*[]storage.URL, error) {
-	ret := _m.Called(userID)
+// GetUrlsByUserID provides a mock function with given fields: ctx, userID
+func (_m *Storage) GetUrlsByUserID(ctx context.Context, userID string) (*[]storage.URL, error) {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUrlsByUserID")
@@ -104,19 +107,19 @@ func (_m *Storage) GetUrlsByUserID(userID string) (*[]storage.URL, error) {
 
 	var r0 *[]storage.URL
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*[]storage.URL, error)); ok {
-		return rf(userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*[]storage.URL, error)); ok {
+		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(string) *[]storage.URL); ok {
-		r0 = rf(userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *[]storage.URL); ok {
+		r0 = rf(ctx, userID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*[]storage.URL)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, userID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -124,9 +127,9 @@ func (_m *Storage) GetUrlsByUserID(userID string) (*[]storage.URL, error) {
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: hash, url, userID
-func (_m *Storage) Save(hash string, url string, userID string) (string, error) {
-	ret := _m.Called(hash, url, userID)
+// Save provides a mock function with given fields: ctx, hash, url, userID
+func (_m *Storage) Save(ctx context.Context, hash string, url string, userID string) (string, error) {
+	ret := _m.Called(ctx, hash, url, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
@@ -134,17 +137,17 @@ func (_m *Storage) Save(hash string, url string, userID string) (string, error) 
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, string) (string, error)); ok {
-		return rf(hash, url, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) (string, error)); ok {
+		return rf(ctx, hash, url, userID)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, string) string); ok {
-		r0 = rf(hash, url, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) string); ok {
+		r0 = rf(ctx, hash, url, userID)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
-		r1 = rf(hash, url, userID)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = rf(ctx, hash, url, userID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -152,17 +155,17 @@ func (_m *Storage) Save(hash string, url string, userID string) (string, error) 
 	return r0, r1
 }
 
-// SaveBatch provides a mock function with given fields: batch, userID
-func (_m *Storage) SaveBatch(batch []storage.URL, userID string) error {
-	ret := _m.Called(batch, userID)
+// SaveBatch provides a mock function with given fields: ctx, batch, userID
+func (_m *Storage) SaveBatch(ctx context.Context, batch []storage.URL, userID string) error {
+	ret := _m.Called(ctx, batch, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveBatch")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]storage.URL, string) error); ok {
-		r0 = rf(batch, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, []storage.URL, string) error); ok {
+		r0 = rf(ctx, batch, userID)
 	} else {
 		r0 = ret.Error(0)
 	}

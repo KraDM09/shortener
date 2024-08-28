@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -27,6 +28,7 @@ type app struct {
 
 // newApp принимает на вход внешние зависимости приложения и возвращает новый объект app
 func newApp(
+	ctx context.Context,
 	store storage.Storage,
 	router router.Router,
 	logger logger.Logger,
@@ -43,12 +45,14 @@ func newApp(
 	}
 
 	// запустим горутину с фоновым удалением хешей
-	go instance.flushHashes()
+	go instance.flushHashes(ctx)
 
 	return instance
 }
 
-func (a *app) webhook() router.Router {
+func (a *app) webhook(
+	ctx context.Context,
+) router.Router {
 	a.router.Use(a.logger.RequestLogger)
 	a.router.Use(a.compressor.RequestCompressor)
 	a.router.Use(a.access.Request)
@@ -57,30 +61,34 @@ func (a *app) webhook() router.Router {
 	userHandler := user.NewHandler(a.store)
 
 	a.router.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handler.SaveNewURLHandler(rw, r, GetUserID(r))
+		handler.SaveNewURLHandler(ctx, rw, r, GetUserID(r))
 	})
-	a.router.Get("/ping", handlers.PingHandler)
+	a.router.Post("/ping", func(rw http.ResponseWriter, r *http.Request) {
+		handler.PingHandler(ctx, rw, r)
+	})
 	a.router.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
-		handler.GetURLByHashHandler(rw, r)
+		handler.GetURLByHashHandler(ctx, rw, r)
 	})
 	a.router.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handler.ShortenHandler(rw, r, GetUserID(r))
+		handler.ShortenHandler(ctx, rw, r, GetUserID(r))
 	})
 	a.router.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handler.BatchHandler(rw, r, GetUserID(r))
+		handler.BatchHandler(ctx, rw, r, GetUserID(r))
 	})
 	a.router.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		userHandler.UrlsHandler(rw, r)
+		userHandler.UrlsHandler(ctx, rw, r)
 	})
 	a.router.Delete("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		userHandler.DeleteUrlsHandler(rw, r, a.hashChan, GetUserID(r))
+		userHandler.DeleteUrlsHandler(ctx, rw, r, a.hashChan, GetUserID(r))
 	})
 
 	return a.router
 }
 
 // flushHashes постоянно удаляет несколько хешей из хранилища с определённым интервалом
-func (a *app) flushHashes() {
+func (a *app) flushHashes(
+	ctx context.Context,
+) {
 	// будем сохранять хеши, накопленные за последние 10 секунд
 	ticker := time.NewTicker(10 * time.Second)
 
@@ -97,7 +105,7 @@ func (a *app) flushHashes() {
 				continue
 			}
 			// удалим все пришедшие хеши одновременно
-			err := a.store.DeleteUrls(deleteHashes...)
+			err := a.store.DeleteUrls(ctx, deleteHashes...)
 			if err != nil {
 				a.logger.Error("cannot delete hashes", "error", err.Error())
 				// не будем стирать сообщения, попробуем отправить их чуть позже
