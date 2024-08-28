@@ -56,7 +56,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 		}
 
 		if userID == "" {
-			h.ServeHTTP(w, r)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
