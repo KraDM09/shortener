@@ -1,6 +1,9 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 type SliceStorage struct{}
 
@@ -11,7 +14,10 @@ type Link struct {
 	IsDeleted bool
 }
 
-var hashes []Link
+var (
+	hashes []Link
+	mu     sync.Mutex
+)
 
 func (s SliceStorage) Save(
 	_ context.Context,
@@ -19,6 +25,9 @@ func (s SliceStorage) Save(
 	url string,
 	userID string,
 ) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	hashes = append(hashes, Link{
 		Hash:      hash,
 		URL:       url,
@@ -33,6 +42,9 @@ func (s SliceStorage) Get(
 	_ context.Context,
 	hash string,
 ) (*URL, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	var url URL
 
 	for _, h := range hashes {
@@ -55,6 +67,9 @@ func (s SliceStorage) SaveBatch(
 	batch []URL,
 	userID string,
 ) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	for _, record := range batch {
 		hashes = append(hashes, Link{
 			Hash:      record.Short,
@@ -70,6 +85,9 @@ func (s SliceStorage) GetUrlsByUserID(
 	_ context.Context,
 	userID string,
 ) (*[]URL, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	URLs := make([]URL, 0)
 
 	for _, h := range hashes {
@@ -90,6 +108,9 @@ func (s SliceStorage) DeleteUrls(
 	ctx context.Context,
 	deleteHashes ...DeleteHash,
 ) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	for _, hash := range deleteHashes {
 		link, err := s.Get(ctx, hash.Short)
 		if err != nil {
@@ -113,6 +134,9 @@ func (s SliceStorage) GetQuantityUserShortUrls(
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	quantity := 0
 
 	for _, short := range *shortUrls {
