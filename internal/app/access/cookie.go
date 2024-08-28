@@ -39,6 +39,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			token, err := GenerateJWT(userID)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("ошибка при генерации jwt для пользователя без токена %s", err.Error()), http.StatusBadRequest)
+				return
 			}
 
 			http.SetCookie(w, &http.Cookie{
@@ -49,6 +50,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			})
 		} else if err != nil {
 			http.Error(w, fmt.Sprintf("ошибка при получении токена из куки %s", err.Error()), http.StatusBadRequest)
+			return
 		} else {
 			userID = GetUserID(token.Value)
 		}
