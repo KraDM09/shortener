@@ -63,7 +63,7 @@ func (a *app) webhook(
 	a.router.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 		handler.SaveNewURLHandler(ctx, rw, r, GetUserID(r))
 	})
-	a.router.Post("/ping", func(rw http.ResponseWriter, r *http.Request) {
+	a.router.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
 		handler.PingHandler(ctx, rw, r)
 	})
 	a.router.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
