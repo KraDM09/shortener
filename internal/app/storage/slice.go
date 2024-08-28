@@ -40,6 +40,7 @@ func (s SliceStorage) Get(
 			url = URL{
 				Short:     h.Hash,
 				Original:  h.URL,
+				UserID:    h.UserID,
 				IsDeleted: h.IsDeleted,
 			}
 			break
@@ -86,11 +87,14 @@ func (s SliceStorage) GetUrlsByUserID(
 }
 
 func (s SliceStorage) DeleteUrls(
-	_ context.Context,
+	ctx context.Context,
 	deleteHashes ...DeleteHash,
 ) error {
 	for _, hash := range deleteHashes {
-		link := s.Find(&hashes, hash.Short)
+		link, err := s.Get(ctx, hash.Short)
+		if err != nil {
+			return err
+		}
 
 		if link == nil || link.IsDeleted {
 			continue
@@ -104,24 +108,18 @@ func (s SliceStorage) DeleteUrls(
 	return nil
 }
 
-func (s SliceStorage) Find(links *[]Link, hash string) *Link {
-	for _, l := range *links {
-		if l.Hash == hash {
-			return &l
-		}
-	}
-	return nil
-}
-
 func (s SliceStorage) GetQuantityUserShortUrls(
-	_ context.Context,
+	ctx context.Context,
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {
 	quantity := 0
 
 	for _, short := range *shortUrls {
-		link := s.Find(&hashes, short)
+		link, err := s.Get(ctx, short)
+		if err != nil {
+			return 0, err
+		}
 
 		if link == nil || link.UserID == userID || link.IsDeleted {
 			continue

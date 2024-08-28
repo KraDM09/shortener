@@ -6,6 +6,7 @@ import (
 )
 
 type URL struct {
+	UserID    string `json:"user_id"`
 	Short     string `json:"short_url" db:"short"`
 	Original  string `json:"original_url" db:"original"`
 	IsDeleted bool   `json:"is_deleted" db:"is_deleted"`
