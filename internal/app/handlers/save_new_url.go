@@ -33,6 +33,7 @@ func (h *Handler) SaveNewURLHandler(
 	case errors.Is(err, storage.ErrConflict):
 		hash = short
 		rw.WriteHeader(http.StatusConflict)
+		return
 	case err != nil:
 		http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s err= %s", URL, hash, err), http.StatusInternalServerError)
 		return
