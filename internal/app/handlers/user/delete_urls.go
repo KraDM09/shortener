@@ -27,12 +27,6 @@ func (h *Handler) DeleteUrlsHandler(
 		return
 	}
 
-	shortUrls := make([]string, 0, len(urls))
-
-	for _, hash := range urls {
-		shortUrls = append(shortUrls, hash)
-	}
-
 	quantity, err := (*h.store).GetQuantityUserShortUrls(ctx, userID, &urls)
 	if err != nil {
 		http.Error(rw, "Что-то пошло не так", http.StatusInternalServerError)
