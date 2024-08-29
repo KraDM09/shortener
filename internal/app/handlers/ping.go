@@ -18,7 +18,7 @@ func (h *Handler) PingHandler(
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	rw.WriteHeader(http.StatusOK)
 }
