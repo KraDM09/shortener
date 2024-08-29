@@ -30,6 +30,11 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 		token, err := r.Cookie(constants.CookieTokenKey)
 
 		if errors.Is(err, http.ErrNoCookie) {
+			if r.Method != http.MethodPost {
+				h.ServeHTTP(w, r)
+				return
+			}
+
 			userID = util.CreateUUID()
 			token, err := GenerateJWT(userID)
 			if err != nil {
@@ -51,7 +56,7 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 		}
 
 		if userID == "" {
-			w.WriteHeader(http.StatusUnauthorized)
+			h.ServeHTTP(w, r)
 			return
 		}
 
