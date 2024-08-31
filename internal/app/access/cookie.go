@@ -62,7 +62,7 @@ func (c Cookie) SaveUserID(h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func (c Cookie) Control(_ http.Handler) http.Handler {
+func (c Cookie) Control(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		value := r.Context().Value(constants.ContextUserIDKey)
@@ -71,6 +71,8 @@ func (c Cookie) Control(_ http.Handler) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+
+		h.ServeHTTP(w, r)
 	}
 
 	return http.HandlerFunc(fn)
