@@ -24,7 +24,7 @@ const (
 	Lifetime  = 24 * 7 * time.Hour
 )
 
-func (c Cookie) Request(h http.Handler) http.Handler {
+func (c Cookie) SaveUserID(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var userID string
 		token, err := r.Cookie(constants.CookieTokenKey)
@@ -55,13 +55,22 @@ func (c Cookie) Request(h http.Handler) http.Handler {
 			userID = GetUserID(token.Value)
 		}
 
-		if userID == "" {
-			h.ServeHTTP(w, r)
-			return
-		}
-
 		ctx := context.WithValue(r.Context(), constants.ContextUserIDKey, userID)
 		h.ServeHTTP(w, r.WithContext(ctx))
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func (c Cookie) Control(_ http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		value := r.Context().Value(constants.ContextUserIDKey)
+
+		if value == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 	}
 
 	return http.HandlerFunc(fn)

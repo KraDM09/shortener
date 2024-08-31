@@ -5,5 +5,6 @@ import (
 )
 
 type Access interface {
-	Request(next http.Handler) http.Handler
+	SaveUserID(next http.Handler) http.Handler
+	Control(next http.Handler) http.Handler
 }

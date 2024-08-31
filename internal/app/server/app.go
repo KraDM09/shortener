@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
+
 	"github.com/KraDM09/shortener/internal/app/access"
 	"github.com/KraDM09/shortener/internal/app/compressor"
 	"github.com/KraDM09/shortener/internal/app/handlers"
@@ -55,31 +57,35 @@ func (a *app) webhook(
 ) router.Router {
 	a.router.Use(a.logger.RequestLogger)
 	a.router.Use(a.compressor.RequestCompressor)
-	a.router.Use(a.access.Request)
+	a.router.Use(a.access.SaveUserID)
 
 	handler := handlers.NewHandler(a.store)
 	userHandler := user.NewHandler(a.store)
 
-	a.router.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handler.SaveNewURLHandler(ctx, rw, r, GetUserID(r))
-	})
 	a.router.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
 		handler.PingHandler(ctx, rw, r)
 	})
 	a.router.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handler.GetURLByHashHandler(ctx, rw, r)
 	})
-	a.router.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handler.ShortenHandler(ctx, rw, r, GetUserID(r))
-	})
-	a.router.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handler.BatchHandler(ctx, rw, r, GetUserID(r))
-	})
-	a.router.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		userHandler.UrlsHandler(ctx, rw, r)
-	})
-	a.router.Delete("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
-		userHandler.DeleteUrlsHandler(ctx, rw, r, a.hashChan, GetUserID(r))
+
+	a.router.Group(func(r chi.Router) {
+		r.Use(a.access.Control)
+		r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
+			handler.SaveNewURLHandler(ctx, rw, r, GetUserID(r))
+		})
+		r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
+			handler.ShortenHandler(ctx, rw, r, GetUserID(r))
+		})
+		r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
+			handler.BatchHandler(ctx, rw, r, GetUserID(r))
+		})
+		r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
+			userHandler.UrlsHandler(ctx, rw, r)
+		})
+		r.Delete("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
+			userHandler.DeleteUrlsHandler(ctx, rw, r, a.hashChan, GetUserID(r))
+		})
 	})
 
 	return a.router

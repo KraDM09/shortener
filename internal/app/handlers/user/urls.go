@@ -17,11 +17,6 @@ func (h *Handler) UrlsHandler(
 	rw.Header().Set("Content-Type", "application/json")
 	value := r.Context().Value(constants.ContextUserIDKey)
 
-	if value == nil {
-		rw.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
 	userID := value.(string)
 	URLs, err := (*h.store).GetUrlsByUserID(ctx, userID)
 	if err != nil {

@@ -29,3 +29,7 @@ func (router ChiRouter) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 func (router ChiRouter) Use(middlewares ...func(http.Handler) http.Handler) {
 	chiRouter.Use(middlewares...)
 }
+
+func (router ChiRouter) Group(fn func(r chi.Router)) {
+	chiRouter.Group(fn)
+}
