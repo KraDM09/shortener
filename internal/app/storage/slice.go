@@ -15,8 +15,8 @@ type Link struct {
 }
 
 var (
-	hashes []Link
-	mu     sync.Mutex
+	hashes  []Link
+	sliceMu sync.RWMutex
 )
 
 func (s SliceStorage) Save(
@@ -25,8 +25,8 @@ func (s SliceStorage) Save(
 	url string,
 	userID string,
 ) (string, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.RLock()
+	defer sliceMu.RUnlock()
 
 	hashes = append(hashes, Link{
 		Hash:      hash,
@@ -42,8 +42,8 @@ func (s SliceStorage) Get(
 	_ context.Context,
 	hash string,
 ) (*URL, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.RLock()
+	defer sliceMu.RUnlock()
 
 	var url URL
 
@@ -67,8 +67,8 @@ func (s SliceStorage) SaveBatch(
 	batch []URL,
 	userID string,
 ) error {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.Lock()
+	defer sliceMu.Unlock()
 
 	for _, record := range batch {
 		hashes = append(hashes, Link{
@@ -85,8 +85,8 @@ func (s SliceStorage) GetUrlsByUserID(
 	_ context.Context,
 	userID string,
 ) (*[]URL, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.RLock()
+	defer sliceMu.RUnlock()
 
 	URLs := make([]URL, 0)
 
@@ -108,8 +108,8 @@ func (s SliceStorage) DeleteUrls(
 	ctx context.Context,
 	deleteHashes ...DeleteHash,
 ) error {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.Lock()
+	defer sliceMu.Unlock()
 
 	for _, hash := range deleteHashes {
 		link, err := s.Get(ctx, hash.Short)
@@ -134,8 +134,8 @@ func (s SliceStorage) GetQuantityUserShortUrls(
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	sliceMu.RLock()
+	defer sliceMu.RUnlock()
 
 	quantity := 0
 

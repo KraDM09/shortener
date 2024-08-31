@@ -1,10 +1,14 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 type MapStorage struct{}
 
 var (
+	mapMu      sync.RWMutex
 	mapHashes  = make(map[string]string)
 	userHashes = make(map[string][]URL)
 )
@@ -15,6 +19,9 @@ func (m MapStorage) Save(
 	url string,
 	userID string,
 ) (string, error) {
+	mapMu.Lock()
+	defer mapMu.Unlock()
+
 	mapHashes[hash] = url
 	userHashes[userID] = append(userHashes[userID], URL{
 		Short:     hash,
@@ -29,6 +36,9 @@ func (m MapStorage) Get(
 	_ context.Context,
 	hash string,
 ) (*URL, error) {
+	mapMu.RLock()
+	defer mapMu.RUnlock()
+
 	var url URL
 
 	for _, userLinks := range userHashes {
@@ -48,6 +58,9 @@ func (m MapStorage) SaveBatch(
 	batch []URL,
 	userID string,
 ) error {
+	mapMu.Lock()
+	defer mapMu.Unlock()
+
 	for _, record := range batch {
 		mapHashes[record.Short] = record.Original
 		userHashes[userID] = append(userHashes[userID], record)
@@ -60,6 +73,9 @@ func (m MapStorage) GetUrlsByUserID(
 	_ context.Context,
 	userID string,
 ) (*[]URL, error) {
+	mapMu.RLock()
+	defer mapMu.RUnlock()
+
 	URLs := userHashes[userID]
 
 	return &URLs, nil
@@ -69,6 +85,9 @@ func (m MapStorage) DeleteUrls(
 	_ context.Context,
 	deleteHashes ...DeleteHash,
 ) error {
+	mapMu.Lock()
+	defer mapMu.Unlock()
+
 	for _, hash := range deleteHashes {
 		userLinks := userHashes[hash.UserID]
 
@@ -98,6 +117,9 @@ func (m MapStorage) GetQuantityUserShortUrls(
 	userID string,
 	shortUrls *[]string,
 ) (int, error) {
+	mapMu.RLock()
+	defer mapMu.RUnlock()
+
 	quantity := 0
 	userLinks := userHashes[userID]
 
