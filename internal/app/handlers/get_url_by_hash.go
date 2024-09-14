@@ -1,14 +1,18 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func GetURLByHashHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func (h *Handler) GetURLByHashHandler(
+	ctx context.Context,
+	rw http.ResponseWriter,
+	r *http.Request,
+) {
 	parsedURL, err := url.Parse(r.RequestURI)
 	if err != nil {
 		http.Error(rw, "Не удалось распарсить адрес", http.StatusBadRequest)
@@ -16,15 +20,22 @@ func GetURLByHashHandler(rw http.ResponseWriter, r *http.Request, store storage.
 	}
 
 	id := strings.TrimLeft(parsedURL.Path, "/")
-	URL, err := store.Get(id)
+	URL, err := (*h.store).Get(ctx, id)
 	if err != nil {
-		http.Error(rw, "Не удалось получить адрес", http.StatusBadRequest)
+		http.Error(rw, fmt.Sprintf("Не удалось получить адрес %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	if URL != "" {
-		rw.Header().Set("Location", URL)
-		rw.WriteHeader(http.StatusTemporaryRedirect)
+	if URL == nil {
+		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	if URL.IsDeleted {
+		rw.WriteHeader(http.StatusGone)
+		return
+	}
+
+	rw.Header().Set("Location", URL.Original)
+	rw.WriteHeader(http.StatusTemporaryRedirect)
 }

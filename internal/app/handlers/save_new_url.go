@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -10,7 +12,12 @@ import (
 	"github.com/KraDM09/shortener/internal/app/util"
 )
 
-func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func (h *Handler) SaveNewURLHandler(
+	ctx context.Context,
+	rw http.ResponseWriter,
+	r *http.Request,
+	userID string,
+) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(rw, "Ошибка чтения тела запроса", http.StatusBadRequest)
@@ -20,14 +27,18 @@ func SaveNewURLHandler(rw http.ResponseWriter, r *http.Request, store storage.St
 	URL := string(body)
 
 	hash := util.CreateHash()
-	short, err := store.Save(hash, URL)
+	short, err := (*h.store).Save(ctx, hash, URL, userID)
 
 	switch {
 	case errors.Is(err, storage.ErrConflict):
 		hash = short
 		rw.WriteHeader(http.StatusConflict)
 	case err != nil:
-		http.Error(rw, "Не удалось сохранить URL", http.StatusInternalServerError)
+		http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s err= %s", URL, hash, err), http.StatusInternalServerError)
+		return
+	case short == "":
+		http.Error(rw, fmt.Sprintf("Не удалось сохранить URL= %s hash= %s", URL, hash), http.StatusInternalServerError)
+		return
 	}
 
 	rw.Header().Set("Content-Type", "text/plain")

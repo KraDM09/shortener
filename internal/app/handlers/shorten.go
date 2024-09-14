@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -11,7 +12,12 @@ import (
 	"github.com/KraDM09/shortener/internal/app/util"
 )
 
-func ShortenHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func (h *Handler) ShortenHandler(
+	ctx context.Context,
+	rw http.ResponseWriter,
+	r *http.Request,
+	userID string,
+) {
 	var req models.ShortenRequest
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
@@ -20,7 +26,7 @@ func ShortenHandler(rw http.ResponseWriter, r *http.Request, store storage.Stora
 	}
 
 	hash := util.CreateHash()
-	short, err := store.Save(hash, req.URL)
+	short, err := (*h.store).Save(ctx, hash, req.URL, userID)
 
 	rw.Header().Set("Content-Type", "application/json")
 

@@ -1,8 +1,14 @@
 package logger
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
+
+	"github.com/KraDM09/shortener/internal/constants"
 
 	"go.uber.org/zap"
 )
@@ -45,6 +51,7 @@ type (
 	responseData struct {
 		status int
 		size   int
+		body   bytes.Buffer
 	}
 
 	// добавляем реализацию http.ResponseWriter
@@ -57,7 +64,8 @@ type (
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	// записываем ответ, используя оригинальный http.ResponseWriter
 	size, err := r.ResponseWriter.Write(b)
-	r.responseData.size += size // захватываем размер
+	r.responseData.size += size  // захватываем размер
+	r.responseData.body.Write(b) // Сохраняем записанные данные
 	return size, err
 }
 
@@ -69,6 +77,10 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 
 func (logger ZapLogger) Info(msg string, key string, value string) {
 	Log.Info(msg, zap.String(key, value))
+}
+
+func (logger ZapLogger) Error(msg string, key string, value string) {
+	Log.Error(msg, zap.String(key, value))
 }
 
 // WithLogging добавляет дополнительный код для регистрации сведений о запросе
@@ -89,12 +101,32 @@ func (logger ZapLogger) RequestLogger(h http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
+		token, err := r.Cookie(constants.CookieTokenKey)
+		tokenValue := "-"
+
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			fmt.Print("токен отсутствует")
+		case err != nil:
+			panic(fmt.Errorf("ошибка при получении токена из куки %w", err))
+		default:
+			tokenValue = token.Value
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			panic(fmt.Errorf("ошибка чтения тела запроса %w", err))
+		}
+
 		Log.Info("got incoming HTTP request",
 			zap.String("uri", r.RequestURI),
 			zap.String("method", r.Method),
 			zap.Int("status", responseData.status),
 			zap.Duration("duration", duration),
 			zap.Int("size", responseData.size),
+			zap.String("token", tokenValue),
+			zap.String("requestBody", string(body)),                // Логирование тела запроса
+			zap.String("responseBody", responseData.body.String()), // Логирование тела ответа
 		)
 	}
 	return http.HandlerFunc(logFn)

@@ -1,39 +1,39 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/KraDM09/shortener/internal/constants"
+
+	"github.com/KraDM09/shortener/internal/app/access"
 	"github.com/KraDM09/shortener/internal/app/compressor"
 
 	"github.com/KraDM09/shortener/internal/app/config"
-	"github.com/KraDM09/shortener/internal/app/handlers"
 	"github.com/KraDM09/shortener/internal/app/logger"
 	"github.com/KraDM09/shortener/internal/app/router"
 	"github.com/KraDM09/shortener/internal/app/storage"
 )
 
-func Run(store storage.Storage, r router.Router, logger logger.Logger, compressor compressor.Compressor) error {
+func Run(
+	ctx context.Context,
+	store storage.Storage,
+	r router.Router,
+	logger logger.Logger,
+	compressor compressor.Compressor,
+	access access.Access,
+) error {
 	if err := logger.Initialize(config.FlagLogLevel); err != nil {
 		return err
 	}
 
-	r.Use(logger.RequestLogger)
-	r.Use(compressor.RequestCompressor)
+	// создаём экземпляр приложения, передавая внешние зависимости
+	instance := newApp(ctx, store, r, logger, compressor, access)
 
-	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.SaveNewURLHandler(rw, r, store)
-	})
-	r.Get("/ping", handlers.PingHandler)
-	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetURLByHashHandler(rw, r, store)
-	})
-	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.ShortenHandler(rw, r, store)
-	})
-	r.Post("/api/shorten/batch", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.BatchHandler(rw, r, store)
-	})
+	instance.logger.Info("Running server", "address", config.FlagRunAddr)
+	return http.ListenAndServe(config.FlagRunAddr, instance.webhook(ctx))
+}
 
-	logger.Info("Running server", "address", config.FlagRunAddr)
-	return http.ListenAndServe(config.FlagRunAddr, r)
+func GetUserID(r *http.Request) string {
+	return r.Context().Value(constants.ContextUserIDKey).(string)
 }

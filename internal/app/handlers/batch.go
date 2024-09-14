@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,7 +18,12 @@ type URL struct {
 	Short         string `json:"short_url"`
 }
 
-func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage) {
+func (h *Handler) BatchHandler(
+	ctx context.Context,
+	rw http.ResponseWriter,
+	r *http.Request,
+	userID string,
+) {
 	var req models.BatchRequest
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
@@ -54,7 +60,7 @@ func BatchHandler(rw http.ResponseWriter, r *http.Request, store storage.Storage
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := store.SaveBatch(batch); err != nil {
+	if err := (*h.store).SaveBatch(ctx, batch, userID); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
